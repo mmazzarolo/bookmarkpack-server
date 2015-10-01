@@ -1,4 +1,5 @@
 var bodyParser = require('body-parser');
+var compress = require('compression');
 var cors = require('cors');
 var express = require('express');
 var expressValidator = require('express-validator');
@@ -29,7 +30,9 @@ mongoose.connection.on('error', function() {
  * Express configuration.
  */
 app.set('port', process.env.PORT || 3000);
+app.use(compress());
 app.use(cors());
+app.options('*', cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

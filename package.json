@@ -13,6 +13,7 @@
     "async": "^1.4.2",
     "bcrypt-nodejs": "^0.0.3",
     "body-parser": "^1.14.0",
+    "compress": "^0.99.0",
     "cors": "^2.7.1",
     "express": "^4.13.3",
     "express-validator": "^2.17.1",
