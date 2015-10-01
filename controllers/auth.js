@@ -22,10 +22,10 @@ function createJWT(user) {
 exports.postLogin = function(req, res, next) {
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err);
-    if (!user) return res.status(401).send({ msg: 'Wrong email and/or password' });
+    if (!user) return res.status(401).send({ message: 'Wrong email and/or password' });
     user.comparePassword(req.body.password, function(err, isMatch) {
       if (err) return next(err);
-      if (!isMatch) return res.status(401).send({ msg: 'Wrong email and/or password' });
+      if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password' });
       res.send({ token: createJWT(user) });
     });
   });
@@ -45,7 +45,7 @@ exports.postSignup = function(req, res, next) {
   User.findOne({ email: req.body.email }, function(err, existingUser) {
     if (err) return next(err);
     if (existingUser) {
-      return res.status(409).send({ msg: 'Email is already taken' });
+      return res.status(409).send({ message: 'Email is already taken' });
     }
     var user = new User({
       username: req.body.username,
@@ -81,21 +81,21 @@ exports.postGoogle = function(req, res, next) {
     // Step 2. Retrieve profile information about the current user.
     request.get({ url: peopleApiUrl, headers: headers, json: true }, function(err, response, profile) {
       if (profile.error) {
-        return res.status(500).send({msg: profile.error.message});
+        return res.status(500).send({message: profile.error.message});
       }
       // Step 3a. Link user accounts.
       if (req.headers.authorization) {
         User.findOne({ google: profile.sub }, function(err, existingUser) {
           if (err) return next(err);
           if (existingUser) {
-            return res.status(409).send({ msg: 'There is already a Google account that belongs to you' });
+            return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
           }
           var token = req.headers.authorization.split(' ')[1];
           var payload = jwt.decode(token, secrets.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             if (err) return next(err);
             if (!user) {
-              return res.status(400).send({ msg: 'User not found' });
+              return res.status(400).send({ message: 'User not found' });
             }
             user.google = profile.sub;
             user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
@@ -143,26 +143,26 @@ exports.postFacebook = function(req, res) {
   // Step 1. Exchange authorization code for access token.
   request.get({ url: accessTokenUrl, qs: params, json: true }, function(err, response, accessToken) {
     if (response.statusCode !== 200) {
-      return res.status(500).send({ msg: accessToken.error.message });
+      return res.status(500).send({ message: accessToken.error.message });
     }
 
     // Step 2. Retrieve profile information about the current user.
     request.get({ url: graphApiUrl, qs: accessToken, json: true }, function(err, response, profile) {
       if (response.statusCode !== 200) {
-        return res.status(500).send({ msg: profile.error.message });
+        return res.status(500).send({ message: profile.error.message });
       }
       if (req.headers.authorization) {
         User.findOne({ facebook: profile.id }, function(err, existingUser) {
           if (err) return next(err);
           if (existingUser) {
-            return res.status(409).send({ msg: 'There is already a Facebook account that belongs to you' });
+            return res.status(409).send({ message: 'There is already a Facebook account that belongs to you' });
           }
           var token = req.headers.authorization.split(' ')[1];
           var payload = jwt.decode(token, secrets.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             if (err) return next(err);
             if (!user) {
-              return res.status(400).send({ msg: 'User not found' });
+              return res.status(400).send({ message: 'User not found' });
             }
             user.facebook = profile.id;
             user.picture = user.picture || 'https://graph.facebook.com/v2.3/' + profile.id + '/picture?type=large';
@@ -282,7 +282,7 @@ exports.postForgot = function(req, res, next) {
     },
     function(token, done) {
       User.findOne({ email: req.body.email.toLowerCase() }, function(err, user) {
-        if (!user) return res.status(400).send({ msg : 'No account with that email address exists.' });
+        if (!user) return res.status(400).send({ message : 'No account with that email address exists.' });
 
         user.resetPasswordToken = token;
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
@@ -336,7 +336,7 @@ exports.postReset = function(req, res, next) {
         .findOne({ resetPasswordToken: req.params.token })
         .where('resetPasswordExpires').gt(Date.now())
         .exec(function(err, user) {
-          if (!user) return res.status(400).send({ msg : 'Password reset token is invalid or has expired.' });
+          if (!user) return res.status(400).send({ message : 'Password reset token is invalid or has expired.' });
 
           user.password = req.body.password;
           user.resetPasswordToken = undefined;
@@ -385,7 +385,7 @@ exports.postUnlink = function(req, res) {
 
   User.findById(req.me, function(err, user) {
     if (err) return next(err);
-    if (!user) return res.status(400).send({ msg: 'User Not Found' });
+    if (!user) return res.status(400).send({ message: 'User Not Found' });
     user[provider] = undefined;
     user.save(function() {
       if (err) return next(err);
