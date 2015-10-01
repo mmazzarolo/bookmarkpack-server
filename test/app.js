@@ -1,35 +1,27 @@
 var request = require('supertest');
 var app = require('../app.js');
 
-describe('GET /', function() {
+describe('GET /api/v1/me', function() {
+  it('should return 401', function(done) {
+    request(app)
+      .get('/api/v1/me')
+      .expect(401, done);
+  });
+});
+
+describe('GET /mazza', function() {
   it('should return 200 OK', function(done) {
     request(app)
-      .get('/')
+      .get('/mazza')
       .expect(200, done);
   });
 });
 
-describe('GET /login', function() {
-  it('should return 200 OK', function(done) {
+describe('GET /mazza/asdfasdfadsf', function() {
+  it('should return 404', function(done) {
     request(app)
-      .get('/login')
-      .expect(200, done);
-  });
-});
-
-describe('GET /signup', function() {
-  it('should return 200 OK', function(done) {
-    request(app)
-      .get('/signup')
-      .expect(200, done);
-  });
-});
-
-describe('GET /contact', function() {
-  it('should return 200 OK', function(done) {
-    request(app)
-      .get('/contact')
-      .expect(200, done);
+      .get('/mazza/asdfasdfadsf')
+      .expect(404, done);
   });
 });
 

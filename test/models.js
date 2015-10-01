@@ -3,10 +3,23 @@ var should = chai.should();
 var User = require('../models/User');
 
 describe('User Model', function() {
+  it('should not create a user with reserved username', function(done) {
+    var user = new User({
+      username: 'test',
+      email: 'test@gmail.com',
+      password: 'test'
+    });
+    user.save(function(err) {
+      if (err) err.name.should.equal('ValidationError');
+      done();
+    });
+  });
+
   it('should create a new user', function(done) {
     var user = new User({
+      username: 'testing',
       email: 'test@gmail.com',
-      password: 'password'
+      password: 'test'
     });
     user.save(function(err) {
       if (err) return done(err);
@@ -17,10 +30,10 @@ describe('User Model', function() {
   it('should not create a user with the unique email', function(done) {
     var user = new User({
       email: 'test@gmail.com',
-      password: 'password'
+      password: 'test'
     });
     user.save(function(err) {
-      if (err) err.code.should.equal(11000);
+      if (err) err.name.should.equal('ValidationError');
       done();
     });
   });

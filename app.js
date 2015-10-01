@@ -59,7 +59,8 @@ function logErrors(err, req, res, next) {
 
 function mongoValidationHandler(err, req, res, next) {
   if (err.name == 'ValidationError') {
-  var errors = [];
+    console.log(err.code);
+    var errors = [];
     for (field in err.errors) {
       item = {}
       item ['param'] = err.errors[field].path;
