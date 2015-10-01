@@ -8,9 +8,6 @@ var methodOverride = require('method-override');
 var mongoose = require('mongoose');
 var path = require('path');
 
-/**
- * API keys and Passport configuration.
- */
 var secrets = require('./config/secrets');
 
 /**
@@ -38,10 +35,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(expressValidator());
-app.use(function(req, res, next) {
-  res.locals.user = req.user || false;
-  next();
-});
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
 require('./config/routes')(app);
@@ -70,7 +63,7 @@ function mongoValidationHandler(err, req, res, next) {
     for (field in err.errors) {
       item = {}
       item ['param'] = err.errors[field].path;
-      item ['msg'] = err.errors[field].message;
+      item ['message'] = err.errors[field].message;
       item ['value'] = err.errors[field].value;
     }
     errors.push(item);

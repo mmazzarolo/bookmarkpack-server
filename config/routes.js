@@ -20,8 +20,9 @@ module.exports = function(app) {
   app.post('/auth/login', authController.postLogin);
   app.post('/auth/signup', authController.postSignup);
   app.post('/auth/forgot', authController.postSignup);
-  app.post('/auth/google', authController.postGoogle);
   app.post('/auth/facebook', authController.postFacebook);
+  app.post('/auth/github', authController.postGithub);
+  app.post('/auth/google', authController.postGoogle);
   app.post('/auth/unlink', authMiddleware.isAuthenticated, authController.postUnlink);
 
   /**

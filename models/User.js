@@ -15,8 +15,8 @@ var userSchema = new mongoose.Schema({
   picture: String,
 
   facebook: String,
+  github: String,
   google: String,
-  tokens: Array,
 
   resetPasswordToken: String,
   resetPasswordExpires: Date,

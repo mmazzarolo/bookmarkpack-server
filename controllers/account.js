@@ -46,9 +46,9 @@ exports.deleteMe = function(req, res, next) {
 
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err);
-    if (!user) return res.status(401).send({ msg: 'Wrong email and/or password' });
+    if (!user) return res.status(401).send({ message: 'Wrong email and/or password' });
     user.comparePassword(req.body.password, function(err, isMatch) {
-      if (!isMatch) return res.status(401).send({ msg: 'Wrong email and/or password' });
+      if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password' });
       User.remove({ _id: user.id }, function(err) {
         if (err) return next(err);
         res.status(200).end();
