@@ -15,8 +15,8 @@ exports.getMe = function(req, res, next) {
  */
 exports.patchMe = function(req, res, next) {
   req.assert('email', 'Incorrect email').optional().isEmail();
-  req.assert('username', 'Reserved username.').isNotReserved();
-  req.assert('username', 'Only letters and number allowed for username.').isClean();
+  req.assert('username', 'Reserved username.').optional().isNotReserved();
+  req.assert('username', 'Only letters and number allowed for username.').optional().isClean();
 
   var errors = req.validationErrors();
   if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });

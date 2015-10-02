@@ -43,8 +43,8 @@ app.use(methodOverride());
 app.use(expressValidator({
   customValidators: {
     isClean: function(value) {
-      var re = new RegExp('A-Za-z0-9');
-      return re.test(value);
+      var pattern = /[^a-zA-Z0-9-]/
+      return !pattern.test(value);
     },
     isNotReserved: function(value) {
       return !_.contains(reserved.usernames, value);
@@ -52,7 +52,7 @@ app.use(expressValidator({
   },
   errorFormatter: function(param, msg, value) {
     var namespace = param.split('.')
-    var root    = namespace.shift()
+    var root = namespace.shift()
     var formParam = root;
 
     while(namespace.length) {
