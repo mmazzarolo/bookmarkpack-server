@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var bcrypt = require('bcrypt-nodejs');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
@@ -41,19 +40,11 @@ userSchema.pre('save', function(next) {
 });
 
 /**
- * Username validation.
- */
-userSchema.path('username').validate(function (username) {
-  return !_.contains(reserved.usernames, username);
-}, 'Reserved username.');
-
-/**
  * Helper method for validating user's password.
  */
-userSchema.methods.comparePassword = function(candidatePassword, cb) {
-  bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
-    if (err) return cb(err);
-    cb(null, isMatch);
+userSchema.methods.comparePassword = function(password, done) {
+  bcrypt.compare(password, this.password, function(err, isMatch) {
+    done(err, isMatch);
   });
 };
 

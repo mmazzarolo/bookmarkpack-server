@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var bodyParser = require('body-parser');
 var compress = require('compression');
 var cors = require('cors');
@@ -8,6 +9,7 @@ var methodOverride = require('method-override');
 var mongoose = require('mongoose');
 var path = require('path');
 
+var reserved = require('./config/reserved');
 var secrets = require('./config/secrets');
 
 /**
@@ -28,19 +30,51 @@ mongoose.connection.on('error', function() {
  */
 app.set('port', process.env.PORT || 3000);
 app.use(compress());
-app.use(cors());
+app.use(cors({credentials: true}));
 app.options('*', cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride());
 
-app.use(expressValidator());
+/**
+ * ExpressValidator configuration.
+ */
+app.use(expressValidator({
+  customValidators: {
+    isClean: function(value) {
+      var re = new RegExp('A-Za-z0-9');
+      return re.test(value);
+    },
+    isNotReserved: function(value) {
+      return !_.contains(reserved.usernames, value);
+    }
+  },
+  errorFormatter: function(param, msg, value) {
+    var namespace = param.split('.')
+    var root    = namespace.shift()
+    var formParam = root;
+
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+      param : formParam,
+      message : msg,
+      value : value
+    };
+  }
+}));
+
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
+/**
+ * Routes configurations.
+ */
 require('./config/routes')(app);
 
 app.get('*', function(req, res, next) {
-  var err = new Error('Not');
+  var err = new Error('Not found');
   err.status = 404;
   next(err);
 });
@@ -48,18 +82,18 @@ app.get('*', function(req, res, next) {
 /**
  * Error handling.
  */
-app.use(methodOverride());
 app.use(mongoValidationHandler);
 app.use(errorHandler);
 
 function logErrors(err, req, res, next) {
-  console.error(err.stack);
+  console.error(err);
   next(err);
 }
 
 function mongoValidationHandler(err, req, res, next) {
+  console.error(err);
   if (err.name == 'ValidationError') {
-    console.log(err.code);
+    console.log(err);
     var errors = [];
     for (field in err.errors) {
       item = {}
@@ -68,13 +102,14 @@ function mongoValidationHandler(err, req, res, next) {
       item ['value'] = err.errors[field].value;
     }
     errors.push(item);
-    return res.status(500).send(errors);
+    return res.status(422).send({message: 'Validation errors.', errors: errors});
   }
   next(err);
 }
 
 function errorHandler(err, req, res, next) {
-  res.status(500).send('error', { error: err });
+  console.log(err);
+  res.status(500).send(err);
 }
 
 /**

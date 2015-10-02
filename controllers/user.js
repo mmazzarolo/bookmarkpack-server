@@ -7,7 +7,7 @@ exports.user = function(req, res, next, username) {
   console.log('username: ' + username);
   User.findOne({ username: username }, function(err, user) {
     if (err) return next(err);
-    if (!user) return res.status(404).send({message: 'Unknown user.'});
+    if (!user) return res.status(404).send({ message: 'Unknown user' });
     req.user = user;
     next();
   });
@@ -18,5 +18,5 @@ exports.user = function(req, res, next, username) {
  * User profile page.
  */
 exports.getUser = function(req, res) {
-  res.status(200).send({user: req.user});
+  res.status(200).send({ user: req.user });
 };

@@ -4,7 +4,6 @@ var User = require('../models/User');
  * GET /api/me
  */
 exports.getMe = function(req, res, next) {
-  console.log(req.me);
   User.findById(req.me, function(err, user) {
     if (err) return next(err);
     res.send(user);
@@ -16,14 +15,15 @@ exports.getMe = function(req, res, next) {
  */
 exports.patchMe = function(req, res, next) {
   req.assert('email', 'Incorrect email').optional().isEmail();
+  req.assert('username', 'Reserved username.').isNotReserved();
+  req.assert('username', 'Only letters and number allowed for username.').isClean();
 
   var errors = req.validationErrors();
-  if (errors) return res.send(errors);
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
   User.findById(req.me, function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found' });
 
-    console.log(req.body);
     user.email = req.body.email || user.email;
     user.username = req.body.username || user.username;
     user.picture = req.body.picture || user.picture;

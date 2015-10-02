@@ -29,7 +29,7 @@ exports.isAuthenticated = function(req, res, next) {
   next();
 }
 
-/**
+/**l
  * Authorization required middleware.
  */
 exports.isAuthorized = function(req, res, next) {

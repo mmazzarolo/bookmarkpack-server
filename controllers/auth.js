@@ -1,5 +1,6 @@
 var jwt = require('jwt-simple');
 var moment = require('moment');
+var request = require('request');
 
 var secrets = require('../config/secrets');
 var User = require('../models/User');
@@ -24,7 +25,6 @@ exports.postLogin = function(req, res, next) {
     if (err) return next(err);
     if (!user) return res.status(401).send({ message: 'Wrong email and/or password' });
     user.comparePassword(req.body.password, function(err, isMatch) {
-      if (err) return next(err);
       if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password' });
       res.send({ token: createJWT(user) });
     });
@@ -37,16 +37,15 @@ exports.postLogin = function(req, res, next) {
 exports.postSignup = function(req, res, next) {
   req.assert('email', 'Incorrect email').isEmail();
   req.assert('password', 'Password must be at least 4 characters long.').len(4);
-  req.assert('confirm', 'Passwords must match.').equals(req.body.password);
+  req.assert('username', 'Reserved username.').isNotReserved();
+  req.assert('username', 'Only letters and number allowed for username.').isClean();
 
   var errors = req.validationErrors();
-  if (errors) return res.send(errors);
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
   User.findOne({ email: req.body.email }, function(err, existingUser) {
     if (err) return next(err);
-    if (existingUser) {
-      return res.status(409).send({ message: 'Email is already taken' });
-    }
+    if (existingUser) return res.status(409).send({ message: 'Email is already taken' });
     var user = new User({
       username: req.body.username,
       email: req.body.email,
@@ -81,19 +80,20 @@ exports.postGoogle = function(req, res, next) {
     // Step 2. Retrieve profile information about the current user.
     request.get({ url: peopleApiUrl, headers: headers, json: true }, function(err, response, profile) {
       if (profile.error) {
-        return res.status(500).send({message: profile.error.message});
+        return res.status(500).send({ message: profile.error.message });
       }
       // Step 3a. Link user accounts.
       if (req.headers.authorization) {
         User.findOne({ google: profile.sub }, function(err, existingUser) {
-          if (err) return next(err);
+          // if (err) return next(err);
           if (existingUser) {
             return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
           }
+
           var token = req.headers.authorization.split(' ')[1];
           var payload = jwt.decode(token, secrets.tokenSecret);
           User.findById(payload.sub, function(err, user) {
-            if (err) return next(err);
+            // if (err) return next(err);
             if (!user) {
               return res.status(400).send({ message: 'User not found' });
             }
@@ -232,7 +232,7 @@ exports.postGithub = function(req, res) {
             }
             user.github = profile.id;
             user.picture = user.picture || profile.avatar_url;
-            user.displayName = user.displayName || profile.name;
+            user.username = user.username || profile.name;
             user.save(function() {
               if (err) return next(err);
               var token = createJWT(user);
@@ -271,7 +271,7 @@ exports.postForgot = function(req, res, next) {
   req.assert('email', 'Please enter a valid email address.').isEmail();
 
   var errors = req.validationErrors();
-  if (errors) return res.send(errors);
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
   async.waterfall([
     function(done) {
@@ -324,11 +324,9 @@ exports.postForgot = function(req, res, next) {
  */
 exports.postReset = function(req, res, next) {
   req.assert('password', 'Password must be at least 4 characters long.').len(4);
-  req.assert('confirm', 'Passwords must match.').equals(req.body.password);
 
   var errors = req.validationErrors();
-
-  if (errors) return res.send(errors);
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
   async.waterfall([
     function(done) {
