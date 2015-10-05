@@ -39,11 +39,6 @@ exports.patchMe = function(req, res, next) {
  * DELETE /api/me
  */
 exports.deleteMe = function(req, res, next) {
-  req.assert('confirm', 'Passwords must match.').optional().equals(req.body.password);
-
-  var errors = req.validationErrors();
-  if (errors) return res.send(errors);
-
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err);
     if (!user) return res.status(401).send({ message: 'Wrong email and/or password' });

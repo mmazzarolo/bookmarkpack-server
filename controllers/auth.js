@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var jwt = require('jwt-simple');
 var moment = require('moment');
 var request = require('request');
@@ -109,17 +110,23 @@ exports.postGoogle = function(req, res, next) {
       } else {
         // Step 3b. Create a new user account or return an existing one.
         User.findOne({ google: profile.sub }, function(err, existingUser) {
-          if (err) return next(err);
           if (existingUser) {
             return res.send({ token: createJWT(existingUser) });
           }
-          var user = new User();
-          user.google = profile.sub;
-          user.picture = profile.picture.replace('sz=50', 'sz=200');
-          user.save(function(err) {
-            if (err) return next(err);
-            var token = createJWT(user);
-            res.send({ token: token });
+          User.findOne({ email: profile.email }, function(err, existingEmailUser) {
+            if (existingEmailUser) {
+              return res.status(409).send({ message: 'Email already in use.' });
+            } else {
+              var user = new User();
+              user.google = profile.sub;
+              user.picture = profile.picture.replace('sz=50', 'sz=200');
+              user.email = profile.email;
+              user.save(function(err) {
+                if (err) return next(err);
+                var token = createJWT(user);
+                res.send({ token: token });
+              });
+            }
           });
         });
       }
@@ -132,7 +139,7 @@ exports.postGoogle = function(req, res, next) {
  */
 exports.postFacebook = function(req, res) {
   var accessTokenUrl = 'https://graph.facebook.com/v2.3/oauth/access_token';
-  var graphApiUrl = 'https://graph.facebook.com/v2.3/me';
+  var graphApiUrl = 'https://graph.facebook.com/v2.3/me' + '?fields=email,name,id';
   var params = {
     code: req.body.code,
     client_id: req.body.clientId,
@@ -151,6 +158,8 @@ exports.postFacebook = function(req, res) {
       if (response.statusCode !== 200) {
         return res.status(500).send({ message: profile.error.message });
       }
+      console.log(profile);
+      // Step 3. Check if the user is logged in or
       if (req.headers.authorization) {
         User.findOne({ facebook: profile.id }, function(err, existingUser) {
           if (err) return next(err);
@@ -176,18 +185,24 @@ exports.postFacebook = function(req, res) {
       } else {
         // Step 3b. Create a new user account or return an existing one.
         User.findOne({ facebook: profile.id }, function(err, existingUser) {
-          if (err) return next(err);
           if (existingUser) {
             var token = createJWT(existingUser);
             return res.send({ token: token });
           }
-          var user = new User();
-          user.facebook = profile.id;
-          user.picture = 'https://graph.facebook.com/' + profile.id + '/picture?type=large';
-          user.save(function() {
-            if (err) return next(err);
-            var token = createJWT(user);
-            res.send({ token: token });
+          User.findOne({ email: profile.email }, function(err, existingEmailUser) {
+            if (existingEmailUser) {
+              return res.status(409).send({ message: 'Email already in use.' });
+            } else {
+              var user = new User();
+              user.facebook = profile.id;
+              user.picture = 'https://graph.facebook.com/' + profile.id + '/picture?type=large';
+              user.email = profile.email;
+              user.save(function() {
+                if (err) return next(err);
+                var token = createJWT(user);
+                res.send({ token: token });
+              });
+            }
           });
         });
       }
@@ -209,7 +224,7 @@ exports.postForgot = function(req, res, next) {
     function(done) {
       crypto.randomBytes(16, function(err, buf) {
         var token = buf.toString('hex');
-        done(err, token);l
+        done(err, token);
       });
     },
     function(token, done) {
@@ -309,13 +324,12 @@ exports.postReset = function(req, res, next) {
  */
 exports.postUnlink = function(req, res) {
   var provider = req.body.provider;
+  var providers = ['facebook', 'google'];
   console.log(provider);
-  var providers = ['facebook', 'google', 'github'];
 
-  if (!providers.indexOf(provider)) return res.status(400).send({ message: 'Unknown OAuth Provider' });
+  if (!_.contains(providers, provider)) return res.status(400).send({ message: 'Unknown OAuth Provider' });
 
   User.findById(req.me, function(err, user) {
-    if (err) return next(err);
     if (!user) return res.status(400).send({ message: 'User Not Found' });
     user[provider] = undefined;
     user.save(function() {
