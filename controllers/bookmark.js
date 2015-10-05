@@ -1,10 +1,10 @@
 var _ = require('lodash');
 var S = require('string');
 var async = require('async');
+var request = require('request');
+
 var User = require('../models/User');
 var Bookmark = require('../models/Bookmark');
-
-var request = require('request');
 
 /**
  * app.param {bookmark}

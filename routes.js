@@ -1,11 +1,11 @@
 module.exports = function(app) {
 
-  var userController = require('../controllers/user');
-  var bookmarkController = require('../controllers/bookmark');
-  var authController = require('../controllers/auth');
-  var accountController = require('../controllers/account');
+  var userController = require('./controllers/user');
+  var bookmarkController = require('./controllers/bookmark');
+  var authController = require('./controllers/auth');
+  var accountController = require('./controllers/account');
 
-  var authMiddleware = require('../middlewares/auth');
+  var authMiddleware = require('./middlewares/auth');
 
   /**
    * Account routes.
@@ -19,7 +19,8 @@ module.exports = function(app) {
    */
   app.post('/auth/login', authController.postLogin);
   app.post('/auth/signup', authController.postSignup);
-  app.post('/auth/forgot', authController.postSignup);
+  app.post('/auth/forgot', authController.postForgot);
+  app.post('/auth/reset/:token', authController.postReset);
   app.post('/auth/facebook', authController.postFacebook);
   app.post('/auth/google', authController.postGoogle);
   app.post('/auth/unlink', authMiddleware.isAuthenticated, authController.postUnlink);

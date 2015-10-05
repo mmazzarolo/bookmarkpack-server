@@ -2,6 +2,8 @@ module.exports = {
 
   db: process.env.MONGODB || process.env.MONGOLAB_URI || 'mongodb://localhost:27017/test',
 
+  sendgridApiKey: process.env.SENDGRID_PASSWORD || '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',
+
   tokenSecret: process.env.TOKEN_SECRET || 'JWT Token Secret',
 
   sessionSecret: process.env.SESSION_SECRET || 'Your Session Secret goes here',

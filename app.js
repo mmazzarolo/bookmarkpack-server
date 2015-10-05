@@ -71,7 +71,7 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }))
 /**
  * Routes configurations.
  */
-require('./config/routes')(app);
+require('./routes')(app);
 
 app.get('*', function(req, res, next) {
   var err = new Error('Not found');

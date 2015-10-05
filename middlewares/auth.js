@@ -1,7 +1,7 @@
 var jwt = require('jwt-simple');
 var moment = require('moment');
 
-var secrets = require('../config/secrets');
+var secretsConfig = require('../config/secrets');
 var User = require('../models/User');
 
 /**
@@ -15,9 +15,8 @@ exports.isAuthenticated = function(req, res, next) {
 
   var payload = null;
   try {
-    payload = jwt.decode(token, secrets.tokenSecret);
-  }
-  catch (err) {
+    payload = jwt.decode(token, secretsConfig.tokenSecret);
+  } catch (err) {
     return res.status(401).send({ message: err.message });
   }
 
@@ -25,7 +24,6 @@ exports.isAuthenticated = function(req, res, next) {
     return res.status(401).send({ message: 'Token has expired' });
   }
   req.me = payload.sub;
-  console.log('isAuthenticated: ok');
   next();
 }
 
@@ -34,6 +32,5 @@ exports.isAuthenticated = function(req, res, next) {
  */
 exports.isAuthorized = function(req, res, next) {
   if (!req.user._id.equals(req.me)) return res.status(203).send({ message: 'Not authorized' });
-  console.log('isAuthorized: ok');
   next();
 };

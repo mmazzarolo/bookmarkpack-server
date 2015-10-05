@@ -1,10 +1,17 @@
 var _ = require('lodash');
+var async = require('async');
+var crypto = require('crypto');
 var jwt = require('jwt-simple');
 var moment = require('moment');
 var request = require('request');
 
-var secrets = require('../config/secrets');
 var User = require('../models/User');
+
+var secretsConfig = require('../config/secrets');
+var mailConfig = require('../config/mail');
+
+
+var sendgrid  = require('sendgrid')(secretsConfig.sendgridApiKey);
 
 /**
  * JSON web token creation.
@@ -15,7 +22,7 @@ function createJWT(user) {
     iat: moment().unix(),
     exp: moment().add(14, 'days').unix()
   };
-  return jwt.encode(payload, secrets.tokenSecret);
+  return jwt.encode(payload, secretsConfig.tokenSecret);
 }
 
 /**
@@ -68,7 +75,7 @@ exports.postGoogle = function(req, res, next) {
   var params = {
     code: req.body.code,
     client_id: req.body.clientId,
-    client_secret: secrets.googleSecret,
+    client_secret: secretsConfig.googleSecret,
     redirect_uri: req.body.redirectUri,
     grant_type: 'authorization_code'
   };
@@ -92,7 +99,7 @@ exports.postGoogle = function(req, res, next) {
           }
 
           var token = req.headers.authorization.split(' ')[1];
-          var payload = jwt.decode(token, secrets.tokenSecret);
+          var payload = jwt.decode(token, secretsConfig.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             // if (err) return next(err);
             if (!user) {
@@ -143,7 +150,7 @@ exports.postFacebook = function(req, res) {
   var params = {
     code: req.body.code,
     client_id: req.body.clientId,
-    client_secret: secrets.facebookSecret,
+    client_secret: secretsConfig.facebookSecret,
     redirect_uri: req.body.redirectUri
   };
 
@@ -167,7 +174,7 @@ exports.postFacebook = function(req, res) {
             return res.status(409).send({ message: 'There is already a Facebook account that belongs to you' });
           }
           var token = req.headers.authorization.split(' ')[1];
-          var payload = jwt.decode(token, secrets.tokenSecret);
+          var payload = jwt.decode(token, secretsConfig.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             if (err) return next(err);
             if (!user) {
@@ -211,7 +218,7 @@ exports.postFacebook = function(req, res) {
 };
 
 /**
- * POST /forgot
+ * POST auth/forgot
  * Create a random token, then the send user an email with a reset link.
  */
 exports.postForgot = function(req, res, next) {
@@ -221,52 +228,39 @@ exports.postForgot = function(req, res, next) {
   if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
   async.waterfall([
+    // Create a crypted token
     function(done) {
       crypto.randomBytes(16, function(err, buf) {
         var token = buf.toString('hex');
         done(err, token);
       });
     },
+    // Search an User with the parameter email
     function(token, done) {
       User.findOne({ email: req.body.email.toLowerCase() }, function(err, user) {
         if (!user) return res.status(400).send({ message : 'No account with that email address exists.' });
-
         user.resetPasswordToken = token;
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-
         user.save(function(err) {
           done(err, token, user);
         });
       });
     },
+    // Send the email
     function(token, user, done) {
-      var transporter = nodemailer.createTransport({
-        service: 'SendGrid',
-        auth: {
-          user: secrets.sendgrid.user,
-          pass: secrets.sendgrid.password
-        }
-      });
-      var mailOptions = {
-        to: user.email,
-        from: 'bookmark@pack.com',
-        subject: 'Reset your password on BookmarkPack',
-        text: 'You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n' +
-          'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
-          'http://' + req.headers.host + '/reset/' + token + '\n\n' +
-          'If you did not request this, please ignore this email and your password will remain unchanged.\n'
-      };
-      transporter.sendMail(mailOptions, function(err) {
+      var email = mailConfig.forgotMail(user.email, token);
+      sendgrid.send(email, function(err, json) {
         done(err, 'done');
       });
     }
   ], function(err) {
     if (err) return next(err);
+    res.status(200).end();
   });
 };
 
 /**
- * POST /reset/:token
+ * POST auth/reset/:token
  * Process the reset password request.
  */
 exports.postReset = function(req, res, next) {
@@ -276,46 +270,32 @@ exports.postReset = function(req, res, next) {
   if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
   async.waterfall([
+    // Search the token user
     function(done) {
       User
         .findOne({ resetPasswordToken: req.params.token })
         .where('resetPasswordExpires').gt(Date.now())
         .exec(function(err, user) {
           if (!user) return res.status(400).send({ message : 'Password reset token is invalid or has expired.' });
-
           user.password = req.body.password;
           user.resetPasswordToken = undefined;
           user.resetPasswordExpires = undefined;
-
           user.save(function(err) {
             if (err) return next(err);
-            req.logIn(user, function(err) {
-              done(err, user);
-            });
+            done(err, user);
           });
-        });
-    },
-    function(user, done) {
-      var transporter = nodemailer.createTransport({
-        service: 'SendGrid',
-        auth: {
-          user: secrets.sendgrid.user,
-          pass: secrets.sendgrid.password
-        }
       });
-      var mailOptions = {
-        to: user.email,
-        from: 'bookmark@pack.com',
-        subject: 'Your BookmarkPack password has been changed',
-        text: 'Hello,\n\n' +
-          'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
-      };
-      transporter.sendMail(mailOptions, function(err) {
-        done(err);
+    },
+    // Send the email
+    function(user, done) {
+      var email = mailConfig.resetMail(user.email);
+      sendgrid.send(email, function(err, json) {
+        done(err, 'done');
       });
     }
   ], function(err) {
     if (err) return next(err);
+    res.status(200).end();
   });
 };
 

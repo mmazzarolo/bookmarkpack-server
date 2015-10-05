@@ -7,7 +7,7 @@ lib-cov
 *.pid
 *.gz
 *.swp
-
+./config/secrets.js
 pids
 logs
 results

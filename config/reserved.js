@@ -239,6 +239,7 @@ var usernames = [
   'random',
   'register',
   'registration',
+  'reset',
   'root',
   'ruby',
   'rss',
