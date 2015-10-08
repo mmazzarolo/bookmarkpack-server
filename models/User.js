@@ -1,10 +1,8 @@
 var bcrypt = require('bcrypt-nodejs');
-var crypto = require('crypto');
 var mongoose = require('mongoose');
 var uniqueValidator = require('mongoose-unique-validator');
 
-var reserved = require('../config/reserved');
-var Bookmark = require('./Bookmark');
+var Bookmark = require('../models/Bookmark');
 
 var userSchema = new mongoose.Schema({
   email: { type: String, unique: true, index: true, lowercase: true },
@@ -47,16 +45,6 @@ userSchema.methods.comparePassword = function(password, done) {
   });
 };
 
-/**
- * Helper method for getting user's gravatar.
- */
-userSchema.methods.gravatar = function(size) {
-  if (!size) size = 200;
-  if (!this.email) return 'https://gravatar.com/avatar/?s=' + size + '&d=retro';
-  var md5 = crypto.createHash('md5').update(this.email).digest('hex');
-  return 'https://gravatar.com/avatar/' + md5 + '?s=' + size + '&d=retro';
-};
-
-userSchema.plugin(uniqueValidator, {message: 'The {PATH} "{VALUE}" is already in use.'});
+userSchema.plugin(uniqueValidator, { message: 'The {PATH} "{VALUE}" is already in use.' });
 
 module.exports = mongoose.model('User', userSchema);

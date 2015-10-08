@@ -144,7 +144,7 @@ exports.postGoogle = function(req, res, next) {
 /**
  * POST /auth/facebook
  */
-exports.postFacebook = function(req, res) {
+exports.postFacebook = function(req, res, next) {
   var accessTokenUrl = 'https://graph.facebook.com/v2.3/oauth/access_token';
   var graphApiUrl = 'https://graph.facebook.com/v2.3/me' + '?fields=email,name,id';
   var params = {
@@ -302,10 +302,9 @@ exports.postReset = function(req, res, next) {
 /**
  * POST /unlink
  */
-exports.postUnlink = function(req, res) {
+exports.postUnlink = function(req, res, next) {
   var provider = req.body.provider;
   var providers = ['facebook', 'google'];
-  console.log(provider);
 
   if (!_.contains(providers, provider)) return res.status(400).send({ message: 'Unknown OAuth Provider' });
 

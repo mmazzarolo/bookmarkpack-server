@@ -12,7 +12,7 @@ var Bookmark = require('../models/Bookmark');
 exports.bookmark = function(req, res, next, id) {
   console.log('bookmark: ' + id);
   var bookmark = _.find(req.user.bookmarks, function(item){
-    return item._id == id;
+    return item._id === id;
   });
   if (!bookmark) return res.status(404).end();
   req.bookmark = bookmark;
@@ -23,7 +23,7 @@ exports.bookmark = function(req, res, next, id) {
  * POST :username/add
  * New bookmark.
  */
-exports.postAdd = function(req, res) {
+exports.postAdd = function(req, res, next) {
   req.assert('url', 'Invalid URL.').isURL();
 
   var errors = req.validationErrors();
@@ -76,11 +76,11 @@ exports.getDetail = function(req, res) {
  * PATCH :username/:bookmark
  * Edit bookmark.
  */
-exports.patchBookmark = function(req, res) {
+exports.patchBookmark = function(req, res, next) {
   console.log(req.body.name);
   User.findById(req.user._id, function(err, user) {
     if (err) return next(err);
-    bookmark = user.bookmarks.id(req.bookmark._id);
+    var bookmark = user.bookmarks.id(req.bookmark._id);
     bookmark.name = req.body.name || bookmark.name;
     user.save(function(err) {
       if (err) return next(err);
@@ -93,7 +93,7 @@ exports.patchBookmark = function(req, res) {
  * DELETE :username/:bookmark
  * Delete bookmark.
  */
-exports.delete = function(req, res) {
+exports.delete = function(req, res, next) {
   User.findById(req.user._id, function(err, user) {
     if (err) return next(err);
     user.bookmarks.id(req.bookmark._id).remove();

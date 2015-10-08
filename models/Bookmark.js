@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-var request = require('request');
 
 var bookmarkSchema = new mongoose.Schema({
   url: { type: String, required: true },

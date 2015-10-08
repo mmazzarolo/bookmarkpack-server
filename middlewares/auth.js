@@ -2,7 +2,6 @@ var jwt = require('jwt-simple');
 var moment = require('moment');
 
 var secretsConfig = require('../config/secrets');
-var User = require('../models/User');
 
 /**
  * Authentication required middleware.
@@ -25,9 +24,9 @@ exports.isAuthenticated = function(req, res, next) {
   }
   req.me = payload.sub;
   next();
-}
+};
 
-/**l
+/**
  * Authorization required middleware.
  */
 exports.isAuthorized = function(req, res, next) {

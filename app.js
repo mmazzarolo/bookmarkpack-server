@@ -43,7 +43,7 @@ app.use(methodOverride());
 app.use(expressValidator({
   customValidators: {
     isClean: function(value) {
-      var pattern = /[^a-zA-Z0-9-]/
+      var pattern = /[^a-zA-Z0-9-]/;
       return !pattern.test(value);
     },
     isNotReserved: function(value) {
@@ -51,8 +51,8 @@ app.use(expressValidator({
     }
   },
   errorFormatter: function(param, msg, value) {
-    var namespace = param.split('.')
-    var root = namespace.shift()
+    var namespace = param.split('.');
+    var root = namespace.shift();
     var formParam = root;
 
     while(namespace.length) {
@@ -85,21 +85,16 @@ app.get('*', function(req, res, next) {
 app.use(mongoValidationHandler);
 app.use(errorHandler);
 
-function logErrors(err, req, res, next) {
-  console.error(err);
-  next(err);
-}
-
 function mongoValidationHandler(err, req, res, next) {
   console.error(err);
-  if (err.name == 'ValidationError') {
+  if (err.name === 'ValidationError') {
     console.log(err);
     var errors = [];
-    for (field in err.errors) {
-      item = {}
-      item ['param'] = err.errors[field].path;
-      item ['message'] = err.errors[field].message;
-      item ['value'] = err.errors[field].value;
+    var item = {};
+    for (var field in err.errors) {
+      item.param = err.errors[field].path;
+      item.message = err.errors[field].message;
+      item.value = err.errors[field].value;
     }
     errors.push(item);
     return res.status(422).send({message: 'Validation errors.', errors: errors});
