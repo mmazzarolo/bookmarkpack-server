@@ -18,9 +18,11 @@ module.exports = function(app) {
    * Auth routes.
    */
   app.post('/auth/login', authController.postLogin);
-  app.post('/auth/signup', authController.postSignup);
-  app.post('/auth/forgot', authController.postForgot);
-  app.post('/auth/reset/:token', authController.postReset);
+  app.post('/auth/signup', authController.postSignup, authController.postVerify);
+  app.post('/auth/reset', authController.postReset);
+  app.post('/auth/reset/:token', authController.postResetConfirm);
+  app.post('/auth/verify/', authController.postVerify);
+  app.post('/auth/verify/:token', authController.postVerifyConfirm);
   app.post('/auth/facebook', authController.postFacebook);
   app.post('/auth/google', authController.postGoogle);
   app.post('/auth/unlink', authMiddleware.isAuthenticated, authController.postUnlink);

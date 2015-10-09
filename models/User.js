@@ -14,6 +14,9 @@ var userSchema = new mongoose.Schema({
   facebook: String,
   google: String,
 
+  verified: { type: Boolean, default: false },
+  verificationToken: String,
+
   resetPasswordToken: String,
   resetPasswordExpires: Date,
 

@@ -1,4 +1,4 @@
-exports.forgotMail = function(email, token) {
+exports.resetMail = function(email, token) {
   return {
     to: email,
     from: 'bookmark@pack.com',
@@ -11,7 +11,7 @@ exports.forgotMail = function(email, token) {
   }
 };
 
-exports.resetMail = function(email) {
+exports.resetConfirmMail = function(email) {
   return {
     to: email,
     from: 'bookmark@pack.com',
@@ -19,5 +19,18 @@ exports.resetMail = function(email) {
     text:
       'Hello,\n\n' +
       'This is a confirmation that the password for your account ' + email + ' has just been changed.\n'
+  }
+};
+
+exports.verifyMail = function(email, token) {
+  return {
+    to: email,
+    from: 'bookmark@pack.com',
+    subject: 'Verify your account',
+    text:
+      'You are receiving this email because you (or someone else) have registered a new account on BookmarkPack.\n\n' +
+      'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+      'http://localhost:8000/#/verify/' + token + '\n\n' +
+      'If you did not request this, please ignore this email and the account will be deleted.\n'
   }
 };

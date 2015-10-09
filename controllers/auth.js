@@ -62,6 +62,8 @@ exports.postSignup = function(req, res, next) {
     user.save(function(err) {
       if (err) return next(err);
       res.send({ token: createJWT(user) });
+      console.log('eccolo');
+      next();
     });
   });
 };
@@ -94,17 +96,13 @@ exports.postGoogle = function(req, res, next) {
       if (req.headers.authorization) {
         User.findOne({ google: profile.sub }, function(err, existingUser) {
           // if (err) return next(err);
-          if (existingUser) {
-            return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
-          }
-
+          if (existingUser) return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
           var token = req.headers.authorization.split(' ')[1];
           var payload = jwt.decode(token, secretsConfig.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             // if (err) return next(err);
-            if (!user) {
-              return res.status(400).send({ message: 'User not found' });
-            }
+            if (!user) return res.status(400).send({ message: 'User not found' });
+            if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
             user.google = profile.sub;
             user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
             user.save(function() {
@@ -128,6 +126,7 @@ exports.postGoogle = function(req, res, next) {
               user.google = profile.sub;
               user.picture = profile.picture.replace('sz=50', 'sz=200');
               user.email = profile.email;
+              user.verified = true;
               user.save(function(err) {
                 if (err) return next(err);
                 var token = createJWT(user);
@@ -170,16 +169,13 @@ exports.postFacebook = function(req, res, next) {
       if (req.headers.authorization) {
         User.findOne({ facebook: profile.id }, function(err, existingUser) {
           if (err) return next(err);
-          if (existingUser) {
-            return res.status(409).send({ message: 'There is already a Facebook account that belongs to you' });
-          }
+          if (existingUser) return res.status(409).send({ message: 'There is already a Facebook account that belongs to you' });
           var token = req.headers.authorization.split(' ')[1];
           var payload = jwt.decode(token, secretsConfig.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             if (err) return next(err);
-            if (!user) {
-              return res.status(400).send({ message: 'User not found' });
-            }
+            if (!user) return res.status(400).send({ message: 'User not found' });
+            if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
             user.facebook = profile.id;
             user.picture = user.picture || 'https://graph.facebook.com/v2.3/' + profile.id + '/picture?type=large';
             user.save(function() {
@@ -204,6 +200,7 @@ exports.postFacebook = function(req, res, next) {
               user.facebook = profile.id;
               user.picture = 'https://graph.facebook.com/' + profile.id + '/picture?type=large';
               user.email = profile.email;
+              user.verified = true;
               user.save(function() {
                 if (err) return next(err);
                 var token = createJWT(user);
@@ -218,10 +215,10 @@ exports.postFacebook = function(req, res, next) {
 };
 
 /**
- * POST auth/forgot
+ * POST auth/reset
  * Create a random token, then the send user an email with a reset link.
  */
-exports.postForgot = function(req, res, next) {
+exports.postReset = function(req, res, next) {
   req.assert('email', 'Please enter a valid email address.').isEmail();
 
   var errors = req.validationErrors();
@@ -248,7 +245,7 @@ exports.postForgot = function(req, res, next) {
     },
     // Send the email
     function(token, user, done) {
-      var email = mailConfig.forgotMail(user.email, token);
+      var email = mailConfig.resetMail(user.email, token);
       sendgrid.send(email, function(err, json) {
         done(err, 'done');
       });
@@ -263,7 +260,7 @@ exports.postForgot = function(req, res, next) {
  * POST auth/reset/:token
  * Process the reset password request.
  */
-exports.postReset = function(req, res, next) {
+exports.postResetConfirm = function(req, res, next) {
   req.assert('password', 'Password must be at least 4 characters long.').len(4);
 
   var errors = req.validationErrors();
@@ -288,7 +285,7 @@ exports.postReset = function(req, res, next) {
     },
     // Send the email
     function(user, done) {
-      var email = mailConfig.resetMail(user.email);
+      var email = mailConfig.resetConfirmMail(user.email);
       sendgrid.send(email, function(err, json) {
         done(err, 'done');
       });
@@ -296,6 +293,69 @@ exports.postReset = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
     res.status(200).end();
+  });
+};
+
+/**
+ * POST auth/verify
+ * Create a random token, then the send user an email with a verification link.
+ */
+exports.postVerify = function(req, res, next) {
+  req.assert('email', 'Please enter a valid email address.').isEmail();
+
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
+
+  async.waterfall([
+    // Create a crypted token
+    function(done) {
+      crypto.randomBytes(16, function(err, buf) {
+        var token = buf.toString('hex');
+        done(err, token);
+      });
+    },
+    // Search an User with the parameter email
+    function(token, done) {
+      User.findOne({ email: req.body.email.toLowerCase() }, function(err, user) {
+        if (!user) return res.status(400).send({ message : 'No account with that email address exists.' });
+        if (user.verified) return res.status(401).send({ message : 'Account already verified.' });
+        user.verificationToken = token;
+        user.save(function(err) {
+          done(err, token, user);
+        });
+      });
+    },
+    // Send the email
+    function(token, user, done) {
+      var email = mailConfig.verifyMail(user.email, token);
+      sendgrid.send(email, function(err, json) {
+        done(err, 'done');
+      });
+    }
+  ], function(err) {
+    if (err) return next(err);
+    console.log(res.token);
+    res.status(200).end();
+  });
+};
+
+/**
+ * POST auth/verify/:token
+ * Process the verification request.
+ */
+exports.postVerifyConfirm = function(req, res, next) {
+  console.log(req.params.token);
+  User
+    .findOne({ verificationToken: req.params.token })
+    .where({ 'verified' : false })
+    .exec(function(err, user) {
+      if (!user) return res.status(400).send({ message : 'User not found.' });
+      user.verified = true;
+      user.verificationToken = undefined;
+      user.save(function(err) {
+        if (err) return next(err);
+        res.status(200).end();
+      });
   });
 };
 

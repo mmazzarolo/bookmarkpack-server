@@ -23,6 +23,7 @@ exports.patchMe = function(req, res, next) {
 
   User.findById(req.me, function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found' });
+    if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
 
     user.email = req.body.email || user.email;
     user.username = req.body.username || user.username;
@@ -42,6 +43,7 @@ exports.deleteMe = function(req, res, next) {
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err);
     if (!user) return res.status(401).send({ message: 'Wrong email and/or password' });
+    if (!user.verified) return res.status(403).send({ message: 'You are not verfied' });
     user.comparePassword(req.body.password, function(err, isMatch) {
       if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password' });
       User.remove({ _id: user.id }, function(err) {
