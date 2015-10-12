@@ -8,13 +8,6 @@ module.exports = function(app) {
   var authMiddleware = require('./middlewares/auth');
 
   /**
-   * Account routes.
-   */
-  app.get('/api/v1/me', authMiddleware.isAuthenticated, accountController.getMe);
-  app.patch('/api/v1/me', authMiddleware.isAuthenticated, accountController.patchMe);
-  app.delete('/api/v1/me', authMiddleware.isAuthenticated, accountController.deleteMe);
-
-  /**
    * Auth routes.
    */
   app.post('/auth/login', authController.postLogin);
@@ -26,6 +19,15 @@ module.exports = function(app) {
   app.post('/auth/facebook', authController.postFacebook);
   app.post('/auth/google', authController.postGoogle);
   app.post('/auth/unlink', authMiddleware.isAuthenticated, authController.postUnlink);
+
+  /**
+   * Account routes.
+   */
+  app.get('/account', authMiddleware.isAuthenticated, accountController.getAccount);
+  app.patch('/account', authMiddleware.isAuthenticated, accountController.patchAccount);
+  app.delete('/account', authMiddleware.isAuthenticated, accountController.deleteAccount);
+  app.post('/account/password', authMiddleware.isAuthenticated, accountController.postPassword);
+  app.post('/account/email', authMiddleware.isAuthenticated, accountController.postEmail);
 
   /**
    * User routes.
