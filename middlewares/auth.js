@@ -8,7 +8,7 @@ var secretsConfig = require('../config/secrets');
  */
 exports.isAuthenticated = function(req, res, next) {
   if (!req.headers.authorization) {
-    return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
+    return res.status(401).send({ message: 'Please make sure your request has an Authorization header.' });
   }
   var token = req.headers.authorization.split(' ')[1];
 
@@ -20,7 +20,7 @@ exports.isAuthenticated = function(req, res, next) {
   }
 
   if (payload.exp <= moment().unix()) {
-    return res.status(401).send({ message: 'Token has expired' });
+    return res.status(401).send({ message: 'Token has expired, please login again.' });
   }
   req.me = payload.sub;
   next();
@@ -30,6 +30,6 @@ exports.isAuthenticated = function(req, res, next) {
  * Authorization required middleware.
  */
 exports.isAuthorized = function(req, res, next) {
-  if (!req.user._id.equals(req.me)) return res.status(203).send({ message: 'Not authorized' });
+  if (!req.user._id.equals(req.me)) return res.status(203).send({ message: 'Not authorized.' });
   next();
 };

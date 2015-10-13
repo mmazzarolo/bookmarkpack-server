@@ -10,7 +10,7 @@ var Bookmark = require('../models/Bookmark');
  * app.param {bookmark}
  */
 exports.bookmark = function(req, res, next, id) {
-  console.log('bookmark: ' + id);
+  console.log('Requested bookmark: ' + id);
   var bookmark = _.find(req.user.bookmarks, function(item){
     return item._id === id;
   });

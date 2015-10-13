@@ -3,7 +3,6 @@ var bodyParser = require('body-parser');
 var compress = require('compression');
 var cors = require('cors');
 var express = require('express');
-var expressValidator = require('express-validator');
 var logger = require('morgan');
 var methodOverride = require('method-override');
 var mongoose = require('mongoose');
@@ -37,35 +36,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride());
 
-/**
- * ExpressValidator configuration.
- */
-app.use(expressValidator({
-  customValidators: {
-    isClean: function(value) {
-      var pattern = /[^a-zA-Z0-9-]/;
-      return !pattern.test(value);
-    },
-    isNotReserved: function(value) {
-      return !_.contains(reserved.usernames, value);
-    }
-  },
-  errorFormatter: function(param, msg, value) {
-    var namespace = param.split('.');
-    var root = namespace.shift();
-    var formParam = root;
-
-    while(namespace.length) {
-      formParam += '[' + namespace.shift() + ']';
-    }
-    return {
-      param : formParam,
-      message : msg,
-      value : value
-    };
-  }
-}));
-
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
 /**
@@ -86,17 +56,17 @@ app.use(mongoValidationHandler);
 app.use(errorHandler);
 
 function mongoValidationHandler(err, req, res, next) {
-  console.error(err);
   if (err.name === 'ValidationError') {
-    console.log(err);
     var errors = [];
-    var item = {};
     for (var field in err.errors) {
+      var item = {};
       item.param = err.errors[field].path;
-      item.message = err.errors[field].message;
       item.value = err.errors[field].value;
+      for (i = 0; i < err.errors[field].message.length; i++) {
+        item.message = err.errors[field].message[i];
+        errors.push(item);
+      }
     }
-    errors.push(item);
     return res.status(422).send({message: 'Validation errors.', errors: errors});
   }
   next(err);

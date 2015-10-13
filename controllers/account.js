@@ -16,14 +16,8 @@ exports.getAccount = function(req, res, next) {
  * req.body.username
  */
 exports.patchAccount = function(req, res, next) {
-  req.assert('username', 'Reserved username.').optional().isNotReserved();
-  req.assert('username', 'Only letters and number allowed for username.').optional().isClean();
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   User.findById(req.me, function(err, user) {
-    if (!user) return res.status(400).send({ message: 'User not found' });
+    if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
 
     user.email = req.body.email || user.email;
@@ -44,10 +38,10 @@ exports.patchAccount = function(req, res, next) {
  */
 exports.deleteAccount = function(req, res, next) {
   User.findById(req.me, function(err, user) {
-    if (!user) return res.status(400).send({ message: 'User not found' });
+    if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
     user.comparePassword(req.body.password, function(err, isMatch) {
-      if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password' });
+      if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password.' });
       User.remove({ _id: user.id }, function(err) {
         if (err) return next(err);
         res.status(200).end();
@@ -63,13 +57,8 @@ exports.deleteAccount = function(req, res, next) {
  * req.body.newPassword
  */
 exports.postPassword = function(req, res, next) {
-  req.assert('newPassword', 'Password must be at least 4 characters long.').len(4);
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   User.findById(req.me, '+password', function(err, user) {
-    if (!user) return res.status(400).send({ message: 'User not found' });
+    if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
     user.comparePassword(req.body.oldPassword, function(err, isMatch) {
       if (!isMatch) return res.status(401).send({ message: 'Wrong password.' });
@@ -89,13 +78,8 @@ exports.postPassword = function(req, res, next) {
  * req.body.password
  */
 exports.postEmail = function(req, res, next) {
-  req.assert('email', 'Incorrect email').optional().isEmail();
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   User.findById(req.me, '+password', function(err, user) {
-    if (!user) return res.status(400).send({ message: 'User not found' });
+    if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
     user.comparePassword(req.body.password, function(err, isMatch) {
       if (!isMatch) return res.status(401).send({ message: 'Wrong password.' });

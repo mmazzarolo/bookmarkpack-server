@@ -27,13 +27,16 @@ function createJWT(user) {
 
 /**
  * POST /auth/login
+ *
+ * req.body.email
+ * req.body.password
  */
 exports.postLogin = function(req, res, next) {
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err);
-    if (!user) return res.status(401).send({ message: 'Wrong email and/or password' });
+    if (!user) return res.status(401).send({ message: 'Wrong email and/or password.' });
     user.comparePassword(req.body.password, function(err, isMatch) {
-      if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password' });
+      if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password.' });
       res.send({ token: createJWT(user) });
     });
   });
@@ -41,19 +44,15 @@ exports.postLogin = function(req, res, next) {
 
 /**
  * POST /auth/signup
+ *
+ * req.body.username
+ * req.body.email
+ * req.body.password
  */
 exports.postSignup = function(req, res, next) {
-  req.assert('email', 'Incorrect email').isEmail();
-  req.assert('password', 'Password must be at least 4 characters long.').len(4);
-  req.assert('username', 'Reserved username.').isNotReserved();
-  req.assert('username', 'Only letters and number allowed for username.').isClean();
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   User.findOne({ email: req.body.email }, function(err, existingUser) {
     if (err) return next(err);
-    if (existingUser) return res.status(409).send({ message: 'Email is already taken' });
+    if (existingUser) return res.status(409).send({ message: 'Email is already taken.' });
     var user = new User({
       username: req.body.username,
       email: req.body.email,
@@ -62,7 +61,6 @@ exports.postSignup = function(req, res, next) {
     user.save(function(err) {
       if (err) return next(err);
       res.send({ token: createJWT(user) });
-      console.log('eccolo');
       next();
     });
   });
@@ -96,12 +94,12 @@ exports.postGoogle = function(req, res, next) {
       if (req.headers.authorization) {
         User.findOne({ google: profile.sub }, function(err, existingUser) {
           // if (err) return next(err);
-          if (existingUser) return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
+          if (existingUser) return res.status(409).send({ message: 'There is already a Google account that belongs to you.' });
           var token = req.headers.authorization.split(' ')[1];
           var payload = jwt.decode(token, secretsConfig.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             // if (err) return next(err);
-            if (!user) return res.status(400).send({ message: 'User not found' });
+            if (!user) return res.status(400).send({ message: 'User not found.' });
             if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
             user.google = profile.sub;
             user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
@@ -164,17 +162,16 @@ exports.postFacebook = function(req, res, next) {
       if (response.statusCode !== 200) {
         return res.status(500).send({ message: profile.error.message });
       }
-      console.log(profile);
       // Step 3. Check if the user is logged in or
       if (req.headers.authorization) {
         User.findOne({ facebook: profile.id }, function(err, existingUser) {
           if (err) return next(err);
-          if (existingUser) return res.status(409).send({ message: 'There is already a Facebook account that belongs to you' });
+          if (existingUser) return res.status(409).send({ message: 'There is already a Facebook account that belongs to you.' });
           var token = req.headers.authorization.split(' ')[1];
           var payload = jwt.decode(token, secretsConfig.tokenSecret);
           User.findById(payload.sub, function(err, user) {
             if (err) return next(err);
-            if (!user) return res.status(400).send({ message: 'User not found' });
+            if (!user) return res.status(400).send({ message: 'User not found.' });
             if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
             user.facebook = profile.id;
             user.picture = user.picture || 'https://graph.facebook.com/v2.3/' + profile.id + '/picture?type=large';
@@ -217,13 +214,10 @@ exports.postFacebook = function(req, res, next) {
 /**
  * POST auth/reset
  * Create a random token, then the send user an email with a reset link.
+ *
+ * req.body.email
  */
 exports.postReset = function(req, res, next) {
-  req.assert('email', 'Please enter a valid email address.').isEmail();
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   async.waterfall([
     // Create a crypted token
     function(done) {
@@ -259,13 +253,10 @@ exports.postReset = function(req, res, next) {
 /**
  * POST auth/reset/:token
  * Process the reset password request.
+ *
+ * req.body.password
  */
 exports.postResetConfirm = function(req, res, next) {
-  req.assert('password', 'Password must be at least 4 characters long.').len(4);
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   async.waterfall([
     // Search the token user
     function(done) {
@@ -299,13 +290,10 @@ exports.postResetConfirm = function(req, res, next) {
 /**
  * POST auth/verify
  * Create a random token, then the send user an email with a verification link.
+ *
+ * req.body.email
  */
 exports.postVerify = function(req, res, next) {
-  req.assert('email', 'Please enter a valid email address.').isEmail();
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   async.waterfall([
     // Create a crypted token
     function(done) {
@@ -334,7 +322,6 @@ exports.postVerify = function(req, res, next) {
     }
   ], function(err) {
     if (err) return next(err);
-    console.log(res.token);
     res.status(200).end();
   });
 };
@@ -342,9 +329,11 @@ exports.postVerify = function(req, res, next) {
 /**
  * POST auth/verify/:token
  * Process the verification request.
+ *
+ * req.body.email
+ * req.body.password
  */
 exports.postVerifyConfirm = function(req, res, next) {
-  console.log(req.params.token);
   User
     .findOne({ verificationToken: req.params.token })
     .where({ 'verified' : false })
@@ -361,15 +350,17 @@ exports.postVerifyConfirm = function(req, res, next) {
 
 /**
  * POST /unlink
+ *
+ * req.body.provider
  */
 exports.postUnlink = function(req, res, next) {
   var provider = req.body.provider;
   var providers = ['facebook', 'google'];
 
-  if (!_.contains(providers, provider)) return res.status(400).send({ message: 'Unknown OAuth Provider' });
+  if (!_.contains(providers, provider)) return res.status(400).send({ message: 'Unknown OAuth Provider.' });
 
   User.findById(req.me, function(err, user) {
-    if (!user) return res.status(400).send({ message: 'User Not Found' });
+    if (!user) return res.status(400).send({ message: 'User Not Found.' });
     user[provider] = undefined;
     user.save(function() {
       if (err) return next(err);
