@@ -54,7 +54,7 @@ exports.postAdd = function(req, res, next) {
         user.bookmarks.push(bookmark);
         user.save(function(err) {
           if (err) return next(err);
-          res.status(200).end();
+          res.status(200).send({ bookmark: bookmark}).end();
         });
       });
     }

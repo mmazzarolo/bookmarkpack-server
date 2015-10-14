@@ -14,9 +14,9 @@ exports.username = function(req, res, next, username) {
 };
 
 /**
- * GET /:username
+ * GET users/:username
  * User profile page.
  */
 exports.getUser = function(req, res) {
-  res.status(200).send({ user: req.user });
+  return res.status(200).send({ user: req.user });
 };
