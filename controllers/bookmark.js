@@ -27,7 +27,7 @@ exports.postAdd = function(req, res, next) {
   req.assert('url', 'Invalid URL.').isURL();
 
   var errors = req.validationErrors();
-  if (errors) return res.send(errors);
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
   async.waterfall([
     // Extracting the title from the page

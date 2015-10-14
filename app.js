@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var compress = require('compression');
 var cors = require('cors');
 var express = require('express');
+var expressValidator = require('express-validator');
 var logger = require('morgan');
 var methodOverride = require('method-override');
 var mongoose = require('mongoose');
@@ -35,6 +36,26 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride());
+
+/**
+ * ExpressValidator configuration.
+ */
+app.use(expressValidator({
+  errorFormatter: function(param, msg, value) {
+    var namespace = param.split('.');
+    var root = namespace.shift();
+    var formParam = root;
+
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+      param : formParam,
+      message : msg,
+      value : value
+    };
+  }
+}));
 
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 

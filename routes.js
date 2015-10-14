@@ -32,15 +32,15 @@ module.exports = function(app) {
   /**
    * User routes.
    */
-  app.param('username', userController.user);
-  app.get('/:username', userController.getUser);
+  app.param('username', userController.username);
+  app.get('/users/:username', userController.getUser);
 
   /**
    * Bookmark routes.
    */
   app.param('bookmark', bookmarkController.bookmark);
-  app.get('/:username/:bookmark', bookmarkController.getDetail);
-  app.post('/:username/add', authMiddleware.isAuthenticated, authMiddleware.isAuthorized, bookmarkController.postAdd);
-  app.patch('/:username/:bookmark', authMiddleware.isAuthenticated, authMiddleware.isAuthorized, bookmarkController.patchBookmark);
-  app.delete('/:username/:bookmark', authMiddleware.isAuthenticated, authMiddleware.isAuthorized, bookmarkController.delete);
+  app.post('/users/:username/add', authMiddleware.isAuthenticated, authMiddleware.isAuthorized, bookmarkController.postAdd);
+  app.get('/users/:username/:bookmark', bookmarkController.getDetail);
+  app.patch('/users/:username/:bookmark', authMiddleware.isAuthenticated, authMiddleware.isAuthorized, bookmarkController.patchBookmark);
+  app.delete('/users/:username/:bookmark', authMiddleware.isAuthenticated, authMiddleware.isAuthorized, bookmarkController.delete);
 };

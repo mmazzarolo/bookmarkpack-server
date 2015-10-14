@@ -3,7 +3,7 @@ var User = require('../models/User');
 /**
  * app.param {username}
  */
-exports.user = function(req, res, next, username) {
+exports.username = function(req, res, next, username) {
   console.log('Requested username: ' + username);
   User.findOne({ username: username }, function(err, user) {
     if (err) return next(err);
