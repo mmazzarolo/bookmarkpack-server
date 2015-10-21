@@ -65,7 +65,7 @@ var userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordExpires: Date,
 
-  bookmarks: [mongoose.model('Bookmark').schema]
+  bookmarks: { type: [mongoose.model('Bookmark').schema], select: true }
 });
 
 /**

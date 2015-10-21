@@ -50,53 +50,14 @@ function extractFavicon(url, done) {
 };
 
 /**
- * POST :username/add
+ * POST :username/bookmarks
  * New bookmark.
+ *
+ * req.body (must be an array of bookmarks)
  */
-exports.postAdd = function(req, res, next) {
-  req.assert('url', 'Invalid URL.').isURL();
+exports.postBookmarks = function(req, res, next) {
 
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
-  async.parallel({
-    title: function(done) {
-      extractTitle(req.body.url, done);
-    },
-    favicon: function(done) {
-      extractFavicon(req.body.url, done)
-    }
-  },
-  function(err, results) {
-    if (err) return next(err);
-    User.findById(req.user.id, function(err, user) {
-      if (err) return next(err);
-      var name = (S(req.body.name).isEmpty())
-        ? results.title
-        : req.body.name;
-      var bookmark = new Bookmark({
-        url: req.body.url,
-        name: name,
-        title: results.title,
-        favicon: results.favicon,
-        hidden: false
-      });
-      user.bookmarks.push(bookmark);
-      user.save(function(err) {
-        if (err) return next(err);
-        res.status(200).send({ bookmark: bookmark}).end();
-      });
-    });
-  });
-};
-
-/**
- * POST :username/bulk
- * New bookmark.
- */
-exports.postBulk = function(req, res, next) {
-
-  var newBookmarks = [];
+  var resBookmarks = [];
 
   async.each(req.body, function(bookmark, complete) {
 
@@ -118,7 +79,7 @@ exports.postBulk = function(req, res, next) {
         favicon: results.favicon,
         hidden: false
       });
-      newBookmarks.push(newBookmark);
+      resBookmarks.push(newBookmark);
       complete();
     });
 
@@ -126,25 +87,22 @@ exports.postBulk = function(req, res, next) {
     if (err) return next(err);
     User.findById(req.user.id, function(err, user) {
       if (err) return next(err);
-      for (var i = 0; i < newBookmarks.length; i++) user.bookmarks.push(newBookmarks[i]);
+      for (var i = 0; i < resBookmarks.length; i++) user.bookmarks.push(resBookmarks[i]);
       user.save(function(err) {
         if (err) return next(err);
-        res.status(200).send({ bookmarks: newBookmarks }).end();
+        res.status(200).send({ bookmarks: resBookmarks }).end();
       });
     });
   });
 };
 
 /**
- * PATCH :username/:bookmark
- * Edit bookmark.
+ * PATCH :username/bookmarks/:bookmark
+ * Edit a bookmark.
+ *
+ * req.body (must be a bookmark)
  */
 exports.patchBookmark = function(req, res, next) {
-  req.assert('url', 'Invalid URL.').optional().isURL();
-
-  var errors = req.validationErrors();
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-
   async.parallel({
     title: function(done) {
       if (req.body.url) {
@@ -172,7 +130,7 @@ exports.patchBookmark = function(req, res, next) {
       bookmark.favicon = results.favicon || bookmark.favicon;
       user.save(function(err) {
         if (err) return next(err);
-        res.status(200).send({bookmark : bookmark});
+        res.status(200).send({ bookmark : bookmark });
       });
     });
   });
@@ -180,18 +138,17 @@ exports.patchBookmark = function(req, res, next) {
 
 /**
  * GET :username/:bookmark
- * Edit bookmark.
+ * Get a bookmark.
  */
-exports.getDetail = function(req, res) {
-  console.log(req.bookmark);
-  res.status(200).send({bookmark : req.bookmark});
+exports.getBookmark = function(req, res) {
+  res.status(200).send({ bookmark : req.bookmark });
 };
 
 /**
  * DELETE :username/:bookmark
- * Delete bookmark.
+ * Delete a bookmark.
  */
-exports.delete = function(req, res, next) {
+exports.deleteBookmark = function(req, res, next) {
   User.findById(req.user._id, function(err, user) {
     if (err) return next(err);
     user.bookmarks.id(req.bookmark._id).remove();
