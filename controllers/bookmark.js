@@ -12,11 +12,41 @@ var Bookmark = require('../models/Bookmark');
 exports.bookmark = function(req, res, next, id) {
   console.log('Requested bookmark: ' + id);
   var bookmark = _.find(req.user.bookmarks, function(item){
-    return item._id === id;
+    return item._id == id;
   });
   if (!bookmark) return res.status(404).end();
   req.bookmark = bookmark;
   next();
+};
+
+// Extracting the title from the page
+function extractTitle(url, done) {
+  request(url, function (err, response, body) {
+    if (!body) {
+      done(null, 'Invalid address');
+      return;
+    }
+    var re = new RegExp('<title>(.*?)</title>', 'i');
+    var match = body.match(re);
+    var title = '';
+    if (match) title = match[1];
+    done(err, title);
+  });
+};
+
+// Extracting the favicon from the url
+function extractFavicon(url, done) {
+  var faviconUrl =  unescape('http://www.google.com/s2/favicons?domain=' + url);
+  request({ uri: faviconUrl, encoding: 'binary' }, function (err, response, body) {
+    var favicon = undefined;
+    if (!err && response.statusCode == 200) {
+      var type = response.headers['content-type'];
+      var prefix = 'data:' + type + ';base64,';
+      var image = new Buffer(body.toString(), 'binary').toString("base64")
+      favicon = prefix + image;
+    }
+    done(err, favicon);
+  });
 };
 
 /**
@@ -29,37 +59,77 @@ exports.postAdd = function(req, res, next) {
   var errors = req.validationErrors();
   if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
 
-  async.waterfall([
-    // Extracting the title from the page
-    function(done) {
-      request(req.body.url, function (err, response, body) {
-        var re = new RegExp('<title>(.*?)</title>', 'i');
-        var title = body.match(re)[1];
-        done(err, title);
-      });
+  async.parallel({
+    title: function(done) {
+      extractTitle(req.body.url, done);
     },
-    // Adding the new bookmark
-    function(title, done) {
-      User.findById(req.user.id, function(err, user) {
-        if (err) return next(err);
-        var name = (S(req.body.name).isEmpty())
-          ? title
-          : req.body.name;
-        var bookmark = new Bookmark({
-          url: req.body.url,
-          name: name,
-          title: title,
-          hidden: false
-        });
-        user.bookmarks.push(bookmark);
-        user.save(function(err) {
-          if (err) return next(err);
-          res.status(200).send({ bookmark: bookmark}).end();
-        });
-      });
+    favicon: function(done) {
+      extractFavicon(req.body.url, done)
     }
-  ], function(err) {
+  },
+  function(err, results) {
     if (err) return next(err);
+    User.findById(req.user.id, function(err, user) {
+      if (err) return next(err);
+      var name = (S(req.body.name).isEmpty())
+        ? results.title
+        : req.body.name;
+      var bookmark = new Bookmark({
+        url: req.body.url,
+        name: name,
+        title: results.title,
+        favicon: results.favicon,
+        hidden: false
+      });
+      user.bookmarks.push(bookmark);
+      user.save(function(err) {
+        if (err) return next(err);
+        res.status(200).send({ bookmark: bookmark}).end();
+      });
+    });
+  });
+};
+
+/**
+ * PATCH :username/:bookmark
+ * Edit bookmark.
+ */
+exports.patchBookmark = function(req, res, next) {
+  req.assert('url', 'Invalid URL.').optional().isURL();
+
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
+
+  async.parallel({
+    title: function(done) {
+      if (req.body.url) {
+        extractTitle(req.body.url, done);
+      } else {
+        done(null, undefined);
+      }
+    },
+    favicon: function(done) {
+      if (req.body.url) {
+        extractFavicon(req.body.url, done)
+      } else {
+        done(null, undefined);
+      }
+    }
+  },
+  function(err, results) {
+    if (err) return next(err);
+    User.findById(req.user.id, function(err, user) {
+      if (err) return next(err);
+      var bookmark = user.bookmarks.id(req.bookmark._id);
+      bookmark.name = req.body.name || bookmark.name;
+      bookmark.url = req.body.url || bookmark.url;
+      bookmark.title = results.title || bookmark.title;
+      bookmark.favicon = results.favicon || bookmark.favicon;
+      user.save(function(err) {
+        if (err) return next(err);
+        res.status(200).send({bookmark : bookmark});
+      });
+    });
   });
 };
 
@@ -70,23 +140,6 @@ exports.postAdd = function(req, res, next) {
 exports.getDetail = function(req, res) {
   console.log(req.bookmark);
   res.status(200).send({bookmark : req.bookmark});
-};
-
-/**
- * PATCH :username/:bookmark
- * Edit bookmark.
- */
-exports.patchBookmark = function(req, res, next) {
-  console.log(req.body.name);
-  User.findById(req.user._id, function(err, user) {
-    if (err) return next(err);
-    var bookmark = user.bookmarks.id(req.bookmark._id);
-    bookmark.name = req.body.name || bookmark.name;
-    user.save(function(err) {
-      if (err) return next(err);
-      res.status(200).send({bookmark : bookmark});
-    });
-  });
 };
 
 /**
