@@ -91,6 +91,51 @@ exports.postAdd = function(req, res, next) {
 };
 
 /**
+ * POST :username/bulk
+ * New bookmark.
+ */
+exports.postBulk = function(req, res, next) {
+
+  var newBookmarks = [];
+
+  async.each(req.body, function(bookmark, complete) {
+
+    async.parallel({
+      title: function(done) {
+        extractTitle(bookmark.url, done);
+      },
+      favicon: function(done) {
+        extractFavicon(bookmark.url, done)
+      }
+    },
+    function(err, results) {
+      if (err) return next(err);
+      var name = (S(bookmark.name).isEmpty()) ? results.title : bookmark.name;
+      var newBookmark = new Bookmark({
+        url: bookmark.url,
+        name: name,
+        title: results.title,
+        favicon: results.favicon,
+        hidden: false
+      });
+      newBookmarks.push(newBookmark);
+      complete();
+    });
+
+  }, function(err) {
+    if (err) return next(err);
+    User.findById(req.user.id, function(err, user) {
+      if (err) return next(err);
+      for (var i = 0; i < newBookmarks.length; i++) user.bookmarks.push(newBookmarks[i]);
+      user.save(function(err) {
+        if (err) return next(err);
+        res.status(200).send({ bookmarks: newBookmarks }).end();
+      });
+    });
+  });
+};
+
+/**
  * PATCH :username/:bookmark
  * Edit bookmark.
  */
