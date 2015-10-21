@@ -6,6 +6,8 @@ var bookmarkSchema = new mongoose.Schema({
   title: { type: String, default: '' },
   updated: { type: Date, default: Date.now },
   favicon: String,
+  folder: String,
+  tags: [String],
   hidden: Boolean
 });
 
