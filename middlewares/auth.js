@@ -1,6 +1,7 @@
 var jwt = require('jwt-simple');
 var moment = require('moment');
 
+var User = require('../models/User');
 var secretsConfig = require('../config/secrets');
 
 /**
@@ -26,6 +27,20 @@ exports.isAuthenticated = function(req, res, next) {
   }
   req.me = payload.sub;
   next();
+};
+
+/**
+ * Get authenticated user middleware.
+ */
+exports.getAuthenticatedUser = function(req, res, next) {
+  console.log('-> getAuthenticatedUser');
+
+  User.findById(req.me, function(err, user) {
+    if (err) return next(err);
+    if (!user) return res.status(404).send({ message: 'Unknown user.' });
+    req.user = user;
+    next();
+  });
 };
 
 /**

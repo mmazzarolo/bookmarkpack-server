@@ -50,12 +50,12 @@ function extractFavicon(url, done) {
 };
 
 /**
- * POST :username/bookmarks
+ * POST user/bookmarks
  * New bookmark.
  *
  * req.body (can be an array of bookmarks or a single bookmark)
  */
-exports.postBookmarks = function(req, res, next) {
+exports.postMyBookmarks = function(req, res, next) {
   console.log('-> postBookmarks');
 
   var reqBookmarks = [];
@@ -82,7 +82,6 @@ exports.postBookmarks = function(req, res, next) {
     },
     function(err, results) {
       if (err) return next(err);
-      console.log('asdfasdfa');
       var name = (S(bookmark.name).isEmpty()) ? results.title : bookmark.name;
       var newBookmark = new Bookmark({
         url: bookmark.url,
@@ -118,7 +117,7 @@ exports.postBookmarks = function(req, res, next) {
  *
  * req.body (must be a bookmark)
  */
-exports.patchBookmark = function(req, res, next) {
+exports.patchMyBookmark = function(req, res, next) {
   console.log('-> patchBookmark');
 
   async.parallel({
@@ -155,18 +154,10 @@ exports.patchBookmark = function(req, res, next) {
 };
 
 /**
- * GET :username/:bookmark
- * Get a bookmark.
- */
-exports.getBookmark = function(req, res) {
-  res.status(200).send({ bookmark : req.bookmark });
-};
-
-/**
- * DELETE :username/:bookmark
+ * DELETE :user/:bookmark
  * Delete a bookmark.
  */
-exports.deleteBookmark = function(req, res, next) {
+exports.deleteMyBookmark = function(req, res, next) {
   console.log('-> deleteBookmark');
 
   User.findById(req.user._id, function(err, user) {
@@ -178,3 +169,12 @@ exports.deleteBookmark = function(req, res, next) {
     });
   });
 };
+
+/**
+ * GET :username/:bookmark
+ * Get a bookmark.
+ */
+exports.getBookmark = function(req, res) {
+  res.status(200).send({ bookmark : req.bookmark });
+};
+
