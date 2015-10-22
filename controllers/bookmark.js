@@ -53,13 +53,24 @@ function extractFavicon(url, done) {
  * POST :username/bookmarks
  * New bookmark.
  *
- * req.body (must be an array of bookmarks)
+ * req.body (can be an array of bookmarks or a single bookmark)
  */
 exports.postBookmarks = function(req, res, next) {
+  console.log('-> postBookmarks');
 
+  var reqBookmarks = [];
   var resBookmarks = [];
+  var isReqArray = false;
 
-  async.each(req.body, function(bookmark, complete) {
+  if (req.body.constructor === Array) isReqArray = true;
+
+  if (isReqArray) {
+    reqBookmarks = req.body;
+  } else {
+    reqBookmarks[0] = req.body;
+  }
+
+  async.each(reqBookmarks, function(bookmark, complete) {
 
     async.parallel({
       title: function(done) {
@@ -71,6 +82,7 @@ exports.postBookmarks = function(req, res, next) {
     },
     function(err, results) {
       if (err) return next(err);
+      console.log('asdfasdfa');
       var name = (S(bookmark.name).isEmpty()) ? results.title : bookmark.name;
       var newBookmark = new Bookmark({
         url: bookmark.url,
@@ -90,7 +102,11 @@ exports.postBookmarks = function(req, res, next) {
       for (var i = 0; i < resBookmarks.length; i++) user.bookmarks.push(resBookmarks[i]);
       user.save(function(err) {
         if (err) return next(err);
-        res.status(200).send({ bookmarks: resBookmarks }).end();
+        if (isReqArray) {
+          res.status(200).send(resBookmarks).end();
+        } else {
+          res.status(200).send(resBookmarks[0]).end();
+        }
       });
     });
   });
@@ -103,6 +119,8 @@ exports.postBookmarks = function(req, res, next) {
  * req.body (must be a bookmark)
  */
 exports.patchBookmark = function(req, res, next) {
+  console.log('-> patchBookmark');
+
   async.parallel({
     title: function(done) {
       if (req.body.url) {
@@ -149,6 +167,8 @@ exports.getBookmark = function(req, res) {
  * Delete a bookmark.
  */
 exports.deleteBookmark = function(req, res, next) {
+  console.log('-> deleteBookmark');
+
   User.findById(req.user._id, function(err, user) {
     if (err) return next(err);
     user.bookmarks.id(req.bookmark._id).remove();

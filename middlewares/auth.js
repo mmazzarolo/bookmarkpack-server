@@ -7,6 +7,8 @@ var secretsConfig = require('../config/secrets');
  * Authentication required middleware.
  */
 exports.isAuthenticated = function(req, res, next) {
+  console.log('-> isAuthenticated');
+
   if (!req.headers.authorization) {
     return res.status(401).send({ message: 'Please make sure your request has an Authorization header.' });
   }
@@ -30,6 +32,8 @@ exports.isAuthenticated = function(req, res, next) {
  * Authorization required middleware.
  */
 exports.isAuthorized = function(req, res, next) {
+  console.log('-> isAuthorized');
+
   if (!req.user._id.equals(req.me)) return res.status(203).send({ message: 'Not authorized.' });
   next();
 };

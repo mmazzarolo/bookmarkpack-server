@@ -32,6 +32,8 @@ function createJWT(user) {
  * req.body.password
  */
 exports.postLogin = function(req, res, next) {
+  console.log('req.body.email: ' + req.body.email);
+  console.log('req.body.password: ' + req.body.password);
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err);
     if (!user) return res.status(401).send({ message: 'Wrong email and/or password.' });
