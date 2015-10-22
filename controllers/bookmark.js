@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 var S = require('string');
 var async = require('async');
@@ -32,28 +34,29 @@ function extractTitle(url, done) {
     if (match) title = match[1];
     done(err, title);
   });
-};
+}
 
 // Extracting the favicon from the url
 function extractFavicon(url, done) {
   var faviconUrl =  unescape('http://www.google.com/s2/favicons?domain=' + url);
   request({ uri: faviconUrl, encoding: 'binary' }, function (err, response, body) {
-    var favicon = undefined;
+    var favicon;
     if (!err && response.statusCode == 200) {
       var type = response.headers['content-type'];
       var prefix = 'data:' + type + ';base64,';
-      var image = new Buffer(body.toString(), 'binary').toString("base64")
+      var image = new Buffer(body.toString(), 'binary').toString("base64");
       favicon = prefix + image;
     }
     done(err, favicon);
   });
-};
+}
 
 /**
  * POST user/bookmarks
- * New bookmark.
  *
- * req.body (can be an array of bookmarks or a single bookmark)
+ * Add new bookmarks to the current user.
+ *
+ * @param {bookmark}/{[bookmark]} body - A single bookmark or an array of bookmarks.
  */
 exports.postMyBookmarks = function(req, res, next) {
   console.log('-> postBookmarks');
@@ -77,7 +80,7 @@ exports.postMyBookmarks = function(req, res, next) {
         extractTitle(bookmark.url, done);
       },
       favicon: function(done) {
-        extractFavicon(bookmark.url, done)
+        extractFavicon(bookmark.url, done);
       }
     },
     function(err, results) {
@@ -112,10 +115,11 @@ exports.postMyBookmarks = function(req, res, next) {
 };
 
 /**
- * PATCH :username/bookmarks/:bookmark
- * Edit a bookmark.
+ * PATCH user/bookmarks/:bookmark
  *
- * req.body (must be a bookmark)
+ * Updates some bookmark info.
+ *
+ * @param {bookmark} body - The properties of the bookmarks that must be updated.
  */
 exports.patchMyBookmark = function(req, res, next) {
   console.log('-> patchBookmark');
@@ -130,7 +134,7 @@ exports.patchMyBookmark = function(req, res, next) {
     },
     favicon: function(done) {
       if (req.body.url) {
-        extractFavicon(req.body.url, done)
+        extractFavicon(req.body.url, done);
       } else {
         done(null, undefined);
       }
@@ -154,7 +158,8 @@ exports.patchMyBookmark = function(req, res, next) {
 };
 
 /**
- * DELETE :user/:bookmark
+ * DELETE user/bookmarks/:bookmark
+ *
  * Delete a bookmark.
  */
 exports.deleteMyBookmark = function(req, res, next) {

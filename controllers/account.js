@@ -1,3 +1,5 @@
+'use strict';
+
 var User = require('../models/User');
 
 /**
@@ -13,14 +15,16 @@ exports.getAccount = function(req, res, next) {
 /**
  * PATCH /account
  *
- * req.body.username
+ * Change one or more user setting.
+ *
+ * @param {string} body.username - New username (optional).
+ * @param {string} body.picture - New user picture url (optional).
  */
 exports.patchAccount = function(req, res, next) {
   User.findById(req.me, function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
 
-    user.email = req.body.email || user.email;
     user.username = req.body.username || user.username;
     user.picture = req.body.picture || user.picture;
 
@@ -34,7 +38,9 @@ exports.patchAccount = function(req, res, next) {
 /**
  * DELETE /account
  *
- * req.body.password
+ * Delete user account.
+ *
+ * @param {string} body.password - Current password.
  */
 exports.deleteAccount = function(req, res, next) {
   User.findById(req.me, function(err, user) {
@@ -53,8 +59,10 @@ exports.deleteAccount = function(req, res, next) {
 /**
  * POST /account/password
  *
- * req.body.oldPassword
- * req.body.newPassword
+ * Change user password.
+ *
+ * @param {string} body.oldPassword - Current password.
+ * @param {string} body.newPassword - New password.
  */
 exports.postPassword = function(req, res, next) {
   User.findById(req.me, '+password', function(err, user) {
@@ -74,8 +82,10 @@ exports.postPassword = function(req, res, next) {
 /**
  * POST /account/email
  *
- * req.body.email
- * req.body.password
+ * Change user password.
+ *
+ * @param {string} body.email - New user email (optional).
+ * @param {string} body.password - Current password.
  */
 exports.postEmail = function(req, res, next) {
   User.findById(req.me, '+password', function(err, user) {

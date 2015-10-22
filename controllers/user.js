@@ -1,3 +1,5 @@
+'use strict';
+
 var User = require('../models/User');
 
 /**
@@ -15,7 +17,8 @@ exports.username = function(req, res, next, username) {
 
 /**
  * GET user
- * Current user profile page.
+ *
+ * Get the logged in user.
  */
 exports.getMe = function(req, res) {
   return res.status(200).send(req.user);
@@ -23,7 +26,8 @@ exports.getMe = function(req, res) {
 
 /**
  * GET users/:username
- * User profile page.
+ *
+ * Get a specific user.
  */
 exports.getUser = function(req, res) {
   return res.status(200).send(req.user);

@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 var async = require('async');
 var crypto = require('crypto');
@@ -28,8 +30,10 @@ function createJWT(user) {
 /**
  * POST /auth/login
  *
- * req.body.email
- * req.body.password
+ * User login.
+ *
+ * @param {string} body.email - User's email.
+ * @param {string} body.password - User's password.
  */
 exports.postLogin = function(req, res, next) {
   console.log('req.body.email: ' + req.body.email);
@@ -47,9 +51,11 @@ exports.postLogin = function(req, res, next) {
 /**
  * POST /auth/signup
  *
- * req.body.username
- * req.body.email
- * req.body.password
+ * User local signup.
+ *
+ * @param {string} body.username - User's username.
+ * @param {string} body.email - User's email.
+ * @param {string} body.password - User's password.
  */
 exports.postSignup = function(req, res, next) {
   User.findOne({ email: req.body.email }, function(err, existingUser) {
@@ -215,9 +221,10 @@ exports.postFacebook = function(req, res, next) {
 
 /**
  * POST auth/reset
+ *
  * Create a random token, then the send user an email with a reset link.
  *
- * req.body.email
+ * @param {string} body.email - User's email.
  */
 exports.postReset = function(req, res, next) {
   async.waterfall([
@@ -252,11 +259,12 @@ exports.postReset = function(req, res, next) {
   });
 };
 
-/**
+ /**
  * POST auth/reset/:token
+ *
  * Process the reset password request.
  *
- * req.body.password
+ * @param {string} body.password - User's password.
  */
 exports.postResetConfirm = function(req, res, next) {
   async.waterfall([
@@ -289,11 +297,12 @@ exports.postResetConfirm = function(req, res, next) {
   });
 };
 
-/**
+ /**
  * POST auth/verify
+ *
  * Create a random token, then the send user an email with a verification link.
  *
- * req.body.email
+ * @param {string} body.email - User's email.
  */
 exports.postVerify = function(req, res, next) {
   async.waterfall([
@@ -328,12 +337,13 @@ exports.postVerify = function(req, res, next) {
   });
 };
 
-/**
+ /**
  * POST auth/verify/:token
+ *
  * Process the verification request.
  *
- * req.body.email
- * req.body.password
+ * @param {string} body.email - User's email.
+ * @param {string} body.password - User's password.
  */
 exports.postVerifyConfirm = function(req, res, next) {
   User
@@ -353,7 +363,9 @@ exports.postVerifyConfirm = function(req, res, next) {
 /**
  * POST /unlink
  *
- * req.body.provider
+ * Unlink the user account from facebook or google.
+ *
+ * @param {string} body.provider - The provider to unlink (can be 'facebook' or 'google').
  */
 exports.postUnlink = function(req, res, next) {
   var provider = req.body.provider;

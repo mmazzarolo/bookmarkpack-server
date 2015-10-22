@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 var bcrypt = require('bcrypt-nodejs');
 var mongoose = require('mongoose');
