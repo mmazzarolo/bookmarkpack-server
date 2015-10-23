@@ -43,7 +43,7 @@ module.exports = function(app) {
    */
   app.param('bookmark', bookmarkController.bookmark);
   app.post('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.postMyBookmarks);
-  app.patch('/user/bookmarks/:bookmark', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.patchMyBookmark);
-  app.delete('/user/bookmarks/:bookmark', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.deleteMyBookmark);
+  app.patch('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.patchMyBookmark);
+  app.delete('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.deleteMyBookmark);
   app.get('/users/:username/bookmarks/:bookmark', bookmarkController.getBookmark);
  };

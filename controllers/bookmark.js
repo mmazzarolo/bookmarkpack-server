@@ -116,7 +116,7 @@ exports.postMyBookmarks = function(req, res, next) {
 };
 
 /**
- * PATCH user/bookmarks/:bookmark
+ * PATCH user/bookmarks/
  *
  * Updates some bookmark info.
  *
@@ -146,7 +146,7 @@ exports.patchMyBookmark = function(req, res, next) {
     if (err) return next(err);
     User.findById(req.user.id, function(err, user) {
       if (err) return next(err);
-      var bookmark = user.bookmarks.id(req.bookmark._id);
+      var bookmark = user.bookmarks.id(req.body._id);
       bookmark.name = req.body.name || bookmark.name;
       bookmark.url = req.body.url || bookmark.url;
       bookmark.title = results.title || bookmark.title;
@@ -160,16 +160,18 @@ exports.patchMyBookmark = function(req, res, next) {
 };
 
 /**
- * DELETE user/bookmarks/:bookmark
+ * DELETE user/bookmarks/
  *
  * Delete a bookmark.
+ *
+ * @param {bookmark} body - The properties of the bookmarks that must be deleted.
  */
 exports.deleteMyBookmark = function(req, res, next) {
   console.log('-> deleteBookmark');
 
   User.findById(req.user._id, function(err, user) {
     if (err) return next(err);
-    user.bookmarks.id(req.bookmark._id).remove();
+    user.bookmarks.id(req.body._id).remove();
     user.save(function(err) {
       if (err) return next(err);
       res.status(200).end();
