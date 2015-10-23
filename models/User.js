@@ -40,9 +40,6 @@ var validators = {
   ]),
   password: validate.multiValidate([
     {
-      validator: 'isNull',
-      message: 'Password should not be empty.'
-    },  {
       validator: 'isLength',
       arguments: [4, 20],
       message: 'Password should be have at least {ARGS[0]} characters.'

@@ -56,7 +56,6 @@ exports.postLogin = function(req, res, next) {
  *
  * @param {string} body.username - User's username.
  * @param {string} body.email - User's email.
- * @param {string} body.password - User's password.
  * @return {token} - JWT token.
  */
 exports.postSignup = function(req, res, next) {
@@ -84,7 +83,6 @@ exports.postSignup = function(req, res, next) {
  * @param {string} body.code - The login code from Google.
  * @param {string} body.clientId - The clientId of the application.
  * @param {string} body.redirectUri - The redirect URL of the caller.
- * @param {string} body.password - The user's new password (only for signup).
  * @return {token} - JWT token.
  */
 exports.postGoogle = function(req, res, next) {
