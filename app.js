@@ -64,17 +64,15 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }))
  */
 require('./routes')(app);
 
-app.get('*', function(req, res, next) {
-  var err = new Error('Not found');
-  err.status = 404;
-  next(err);
-});
-
 /**
  * Error handling.
  */
 app.use(mongoValidationHandler);
 app.use(errorHandler);
+
+app.get('*', function(req, res, next) {
+  return res.status(404).send(new Error('Not found'));
+});
 
 function mongoValidationHandler(err, req, res, next) {
   if (err.name === 'ValidationError') {
