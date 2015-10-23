@@ -11,6 +11,7 @@ var secretsConfig = require('../config/secrets');
  */
 exports.isAuthenticated = function(req, res, next) {
   console.log('-> isAuthenticated');
+  console.log(req.body);
 
   if (!req.headers.authorization) {
     return res.status(401).send({ message: 'Please make sure your request has an Authorization header.' });

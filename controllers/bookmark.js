@@ -153,7 +153,7 @@ exports.patchMyBookmark = function(req, res, next) {
       bookmark.favicon = results.favicon || bookmark.favicon;
       user.save(function(err) {
         if (err) return next(err);
-        res.status(200).send({ bookmark : bookmark });
+        res.status(200).send(bookmark);
       });
     });
   });
