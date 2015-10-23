@@ -151,6 +151,7 @@ exports.patchMyBookmark = function(req, res, next) {
       bookmark.url = req.body.url || bookmark.url;
       bookmark.title = results.title || bookmark.title;
       bookmark.favicon = results.favicon || bookmark.favicon;
+      bookmark.tags = req.body.tags || bookmark.tags;
       user.save(function(err) {
         if (err) return next(err);
         res.status(200).send(bookmark);
