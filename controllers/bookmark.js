@@ -57,6 +57,7 @@ function extractFavicon(url, done) {
  * Add new bookmarks to the current user.
  *
  * @param {bookmark}/{[bookmark]} body - A single bookmark or an array of bookmarks.
+ * @param {bookmark}/{[bookmark]} - The single updated bookmark or the array of updated bookmarks.
  */
 exports.postMyBookmarks = function(req, res, next) {
   console.log('-> postBookmarks');
@@ -120,6 +121,7 @@ exports.postMyBookmarks = function(req, res, next) {
  * Updates some bookmark info.
  *
  * @param {bookmark} body - The properties of the bookmarks that must be updated.
+ * @return {bookmark} - The updated bookmark.
  */
 exports.patchMyBookmark = function(req, res, next) {
   console.log('-> patchBookmark');

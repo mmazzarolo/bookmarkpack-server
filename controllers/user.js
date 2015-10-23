@@ -19,6 +19,8 @@ exports.username = function(req, res, next, username) {
  * GET user
  *
  * Get the logged in user.
+ *
+ * @return {user} - The logged in user.
  */
 exports.getMe = function(req, res) {
   return res.status(200).send(req.user);
@@ -28,6 +30,8 @@ exports.getMe = function(req, res) {
  * GET users/:username
  *
  * Get a specific user.
+ *
+ * @return {user} - The specific requested user.
  */
 exports.getUser = function(req, res) {
   return res.status(200).send(req.user);

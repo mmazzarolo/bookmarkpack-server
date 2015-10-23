@@ -34,6 +34,7 @@ function createJWT(user) {
  *
  * @param {string} body.email - User's email.
  * @param {string} body.password - User's password.
+ * @return {token} - JWT token.
  */
 exports.postLogin = function(req, res, next) {
   console.log('req.body.email: ' + req.body.email);
@@ -56,6 +57,7 @@ exports.postLogin = function(req, res, next) {
  * @param {string} body.username - User's username.
  * @param {string} body.email - User's email.
  * @param {string} body.password - User's password.
+ * @return {token} - JWT token.
  */
 exports.postSignup = function(req, res, next) {
   User.findOne({ email: req.body.email }, function(err, existingUser) {
@@ -82,6 +84,8 @@ exports.postSignup = function(req, res, next) {
  * @param {string} body.code - The login code from Google.
  * @param {string} body.clientId - The clientId of the application.
  * @param {string} body.redirectUri - The redirect URL of the caller.
+ * @param {string} body.password - The user's new password (only for signup).
+ * @return {token} - JWT token.
  */
 exports.postGoogle = function(req, res, next) {
   var accessTokenUrl = 'https://accounts.google.com/o/oauth2/token';
@@ -160,6 +164,8 @@ exports.postGoogle = function(req, res, next) {
  * @param {string} body.code - The login code from Facebook.
  * @param {string} body.clientId - The clientId of the application.
  * @param {string} body.redirectUri - The redirect URL of the caller.
+ * @param {string} body.password - The user's new password (only for signup).
+ * @return {token} - JWT token.
  */
 exports.postFacebook = function(req, res, next) {
   var accessTokenUrl = 'https://graph.facebook.com/v2.3/oauth/access_token';

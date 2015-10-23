@@ -40,9 +40,11 @@ var validators = {
   ]),
   password: validate.multiValidate([
     {
+      validator: 'isNull',
+      message: 'Password should not be empty.'
+    },  {
       validator: 'isLength',
       arguments: [4, 20],
-      passIfEmpty: true,
       message: 'Password should be have at least {ARGS[0]} characters.'
     }
   ])
@@ -75,7 +77,10 @@ var userSchema = new mongoose.Schema({
  */
 userSchema.pre('save', function(next) {
   var user = this;
+  if (!user.password) return next();
   if (!user.isModified('password')) return next();
+  console.log('pre');
+  console.log(user.password);
   bcrypt.genSalt(10, function(err, salt) {
     if (err) return next(err);
     bcrypt.hash(user.password, salt, null, function(err, hash) {
