@@ -17,11 +17,12 @@ describe('User Model', function() {
 
   it('should create a new user', function(done) {
     var user = new User({
-      username: 'testing',
+      username: 'test001',
       email: 'test@gmail.com',
-      password: 'test'
+      password: 'testa'
     });
     user.save(function(err) {
+      console.log(err);
       if (err) return done(err);
       done();
     })

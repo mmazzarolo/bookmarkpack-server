@@ -56,6 +56,7 @@ exports.postLogin = function(req, res, next) {
  *
  * @param {string} body.username - User's username.
  * @param {string} body.email - User's email.
+ * @param {string} body.password - User's password.
  * @return {token} - JWT token.
  */
 exports.postSignup = function(req, res, next) {
