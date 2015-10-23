@@ -22,7 +22,6 @@ describe('User Model', function() {
       password: 'testa'
     });
     user.save(function(err) {
-      console.log(err);
       if (err) return done(err);
       done();
     })

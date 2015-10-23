@@ -37,13 +37,6 @@ var validators = {
       passIfEmpty: true,
       message: 'Invalid email adress.'
     }
-  ]),
-  password: validate.multiValidate([
-    {
-      validator: 'isLength',
-      arguments: [4, 20],
-      message: 'Password should be have at least {ARGS[0]} characters.'
-    }
   ])
 };
 
@@ -53,7 +46,7 @@ var validators = {
 var userSchema = new mongoose.Schema({
   email: { type: String, unique: true, index: true, lowercase: true, validate: validators.email },
   username: { type: String, unique: true, sparse: true, index: true, lowercase: true, validate: validators.username },
-  password: { type: String, select: false, validate: validators.password },
+  password: { type: String, select: false },
 
   picture: String,
 
@@ -76,8 +69,6 @@ userSchema.pre('save', function(next) {
   var user = this;
   if (!user.password) return next();
   if (!user.isModified('password')) return next();
-  console.log('pre');
-  console.log(user.password);
   bcrypt.genSalt(10, function(err, salt) {
     if (err) return next(err);
     bcrypt.hash(user.password, salt, null, function(err, hash) {

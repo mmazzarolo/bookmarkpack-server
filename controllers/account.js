@@ -6,6 +6,8 @@ var User = require('../models/User');
  * GET /account
  */
 exports.getAccount = function(req, res, next) {
+  console.log('-> getAccount');
+
   User.findById(req.me, function(err, user) {
     if (err) return next(err);
     res.send(user);
@@ -21,6 +23,8 @@ exports.getAccount = function(req, res, next) {
  * @param {string} body.picture - New user picture url (optional).
  */
 exports.patchAccount = function(req, res, next) {
+  console.log('-> patchAccount');
+
   User.findById(req.me, function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
@@ -43,9 +47,10 @@ exports.patchAccount = function(req, res, next) {
  * @param {string} body.password - Current password.
  */
 exports.deleteAccount = function(req, res, next) {
-  User.findById(req.me, function(err, user) {
+  console.log('-> deleteAccount');
+
+  User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
-    if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
     user.comparePassword(req.body.password, function(err, isMatch) {
       if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password.' });
       User.remove({ _id: user.id }, function(err) {
@@ -65,6 +70,8 @@ exports.deleteAccount = function(req, res, next) {
  * @param {string} body.newPassword - New password.
  */
 exports.postPassword = function(req, res, next) {
+  console.log('-> postPassword');
+
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
@@ -88,6 +95,8 @@ exports.postPassword = function(req, res, next) {
  * @param {string} body.password - Current password.
  */
 exports.postEmail = function(req, res, next) {
+  console.log('-> postEmail');
+
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
     if (!user.verified) return res.status(403).send({ message: 'You must verify your account first.' });
