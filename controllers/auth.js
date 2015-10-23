@@ -76,6 +76,12 @@ exports.postSignup = function(req, res, next) {
 
 /**
  * POST /auth/google
+ *
+ * Google login/signup.
+ *
+ * @param {string} body.code - The login code from Google.
+ * @param {string} body.clientId - The clientId of the application.
+ * @param {string} body.redirectUri - The redirect URL of the caller.
  */
 exports.postGoogle = function(req, res, next) {
   var accessTokenUrl = 'https://accounts.google.com/o/oauth2/token';
@@ -148,6 +154,12 @@ exports.postGoogle = function(req, res, next) {
 
 /**
  * POST /auth/facebook
+ *
+ * Google login/signup.
+ *
+ * @param {string} body.code - The login code from Facebook.
+ * @param {string} body.clientId - The clientId of the application.
+ * @param {string} body.redirectUri - The redirect URL of the caller.
  */
 exports.postFacebook = function(req, res, next) {
   var accessTokenUrl = 'https://graph.facebook.com/v2.3/oauth/access_token';
