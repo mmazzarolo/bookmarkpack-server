@@ -23,17 +23,22 @@ exports.bookmark = function(req, res, next, id) {
 
 // Extracting the title from the page
 function extractTitle(url, done) {
-  request(url, function (err, response, body) {
-    if (!body) {
-      done(null, 'Invalid address');
-      return;
+  var stream = '';
+  var re = new RegExp('<title>(.*?)</title>', 'i');
+  var title = '';
+
+  request.get({ url: url })
+  .on('data', function(data) {
+    stream = stream + data;
+    var match = stream.match(re);
+    if (match) {
+      title = match[1];
+      this.abort();
     }
-    var re = new RegExp('<title>(.*?)</title>', 'i');
-    var match = body.match(re);
-    var title = '';
-    if (match) title = match[1];
-    done(err, title);
-  });
+  })
+  .on('end', function(data) {
+    return done(null, title);
+  })
 }
 
 // Extracting the favicon from the url
