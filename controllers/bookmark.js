@@ -151,14 +151,14 @@ exports.patchMyBookmark = function(req, res, next) {
 
   async.parallel({
     title: function(done) {
-      if (req.body.url || hasParam(req.query.extract, 'title')) {
+      if (hasParam(req.query.extract, 'title')) {
         extractTitle(req.body.url, done);
       } else {
         done(null, undefined);
       }
     },
     favicon: function(done) {
-      if (req.body.url || hasParam(req.query.extract, 'favicon')) {
+      if (hasParam(req.query.extract, 'favicon')) {
         extractFavicon(req.body.url, done);
       } else {
         done(null, undefined);
