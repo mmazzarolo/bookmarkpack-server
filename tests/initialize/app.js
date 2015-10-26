@@ -1,8 +1,9 @@
 var request = require('supertest');
-var app = require('../app.js');
 var chai = require('chai');
 var should = chai.should();
-var User = require('../models/User');
+
+var app = require('../../app.js');
+var User = require('../../models/User');
 
 var alpha = {
   username: 'alpha',
