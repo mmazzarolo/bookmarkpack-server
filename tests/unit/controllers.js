@@ -168,10 +168,10 @@ describe('GET /user', function() {
 /**
  * Patch the bookmark.
  */
-describe('PATCH /user/bookmarks?extract=favicon', function() {
+describe('PATCH /user/bookmarks?extract[]=favicon', function() {
   it('should return 200', function(done) {
     request(app)
-      .patch('/user/bookmarks?extract=favicon')
+      .patch('/user/bookmarks?extract[]=favicon')
       .set('Authorization', 'Bearer ' + token)
       .send({ _id: bookmarkId, name: 'test001Bookmark' })
       .expect(200, done);
