@@ -20,13 +20,13 @@ var bookmarks = [
   { url: 'http://www.amazon.it/' },
   { url: 'https://www.reddit.com/' },
   { url: 'https://www.facebook.com/' },
-  { url: 'https://www.youtube.com/' },
-  { url: 'https://play.google.com' },
-  { url: 'https://drive.google.com' },
-  { url: 'https://www.dropbox.com' },
-  { url: 'https://www.google.it' },
-  { url: 'https://github.com/' },
-  { url: 'http://git-scm.com/' },
+  // { url: 'https://www.youtube.com/' },
+  // { url: 'https://play.google.com' },
+  // { url: 'https://drive.google.com' },
+  // { url: 'https://www.dropbox.com' },
+  // { url: 'https://www.google.it' },
+  // { url: 'https://github.com/' },
+  // { url: 'http://git-scm.com/' },
   { url: 'https://www.linkedin.com/' }
 ];
 
@@ -93,7 +93,7 @@ describe('User validation', function() {
 describe('POST /user/bookmarks', function() {
   it('should return 200', function(done) {
     request(app)
-      .post('/user/bookmarks?extract=title&extract=favicon')
+      .post('/user/bookmarks?extract=favicon')
       .set('Authorization', 'Bearer ' + token)
       .send(bookmarks)
       .expect(200, done);
@@ -103,12 +103,12 @@ describe('POST /user/bookmarks', function() {
 /**
  * User delete.
  */
-describe('DELETE /account', function() {
-  it('should return 200', function(done) {
-    request(app)
-      .delete('/account')
-      .set('Authorization', 'Bearer ' + token)
-      .send({ password: 'asdf' })
-      .expect(200, done);
-  });
-});
+// describe('DELETE /account', function() {
+//   it('should return 200', function(done) {
+//     request(app)
+//       .delete('/account')
+//       .set('Authorization', 'Bearer ' + token)
+//       .send({ password: 'asdf' })
+//       .expect(200, done);
+//   });
+// });

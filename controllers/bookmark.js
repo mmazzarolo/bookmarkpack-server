@@ -21,11 +21,22 @@ exports.bookmark = function(req, res, next, id) {
   next();
 };
 
+// Checking if the query has the specified param
+function hasParam(query, param) {
+  if (!query) return false;
+
+  if (query.constructor === Array) {
+    return (_.indexOf(query, param) != -1);
+  } else {
+    return (query == param);
+  }
+}
+
 // Extracting the title from the page
 function extractTitle(url, done) {
   var stream = '';
   var re = new RegExp('<title>(.*?)</title>', 'i');
-  var title = '';
+  var title;
 
   request.get({ url: url })
   .on('data', function(data) {
@@ -83,19 +94,26 @@ exports.postMyBookmarks = function(req, res, next) {
 
     async.parallel({
       title: function(done) {
-        extractTitle(bookmark.url, done);
+        if (hasParam(req.query.extract, 'title')) {
+          extractTitle(bookmark.url, done);
+        } else {
+          return done(null, undefined);
+        }
       },
       favicon: function(done) {
-        extractFavicon(bookmark.url, done);
+        if (hasParam(req.query.extract, 'favicon')) {
+          extractFavicon(bookmark.url, done);
+        } else {
+          return done(null, undefined);
+        }
       }
     },
     function(err, results) {
       if (err) return next(err);
-      var name = (S(bookmark.name).isEmpty()) ? results.title : bookmark.name;
+      // var name = (S(bookmark.name).isEmpty()) ? results.title : bookmark.name;
       var newBookmark = new Bookmark({
         url: bookmark.url,
-        name: name,
-        title: results.title,
+        name: bookmark.name || results.title,
         favicon: results.favicon,
         hidden: false
       });
@@ -133,14 +151,14 @@ exports.patchMyBookmark = function(req, res, next) {
 
   async.parallel({
     title: function(done) {
-      if (req.body.url) {
+      if (req.body.url || hasParam(req.query.extract, 'title')) {
         extractTitle(req.body.url, done);
       } else {
         done(null, undefined);
       }
     },
     favicon: function(done) {
-      if (req.body.url) {
+      if (req.body.url || hasParam(req.query.extract, 'favicon')) {
         extractFavicon(req.body.url, done);
       } else {
         done(null, undefined);
@@ -152,9 +170,8 @@ exports.patchMyBookmark = function(req, res, next) {
     User.findById(req.user.id, function(err, user) {
       if (err) return next(err);
       var bookmark = user.bookmarks.id(req.body._id);
-      bookmark.name = req.body.name || bookmark.name;
+      bookmark.name = req.body.name || results.title || bookmark.name;
       bookmark.url = req.body.url || bookmark.url;
-      bookmark.title = results.title || bookmark.title;
       bookmark.favicon = results.favicon || bookmark.favicon;
       bookmark.tags = req.body.tags || bookmark.tags;
       user.save(function(err) {
