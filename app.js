@@ -41,6 +41,15 @@ app.use(methodOverride());
  * ExpressValidator configuration.
  */
 app.use(expressValidator({
+  customValidators: {
+    isClean: function(value) {
+      var pattern = /[^a-zA-Z0-9-]/;
+      return !pattern.test(value);
+    },
+    notReserved: function(value) {
+      return !_.contains(reserved.usernames, value);
+    }
+  },
   errorFormatter: function(param, msg, value) {
     var namespace = param.split('.');
     var root = namespace.shift();

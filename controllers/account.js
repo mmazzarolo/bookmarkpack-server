@@ -2,6 +2,10 @@
 
 var User = require('../models/User');
 
+function validate(errors, res) {
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
+}
+
 /**
  * GET /account
  */
@@ -24,6 +28,11 @@ exports.getAccount = function(req, res, next) {
  */
 exports.patchAccount = function(req, res, next) {
   console.log('-> patchAccount');
+
+  req.assert('username', 'Reserved username.').optional().notReserved();
+  req.assert('username', 'Only letters and number allowed for username.').optional().isClean();
+  req.assert('picture', 'Invalid picture URL.').optional().isURL();
+  validate(req.validationErrors(), res);
 
   User.findById(req.me, function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
@@ -49,10 +58,13 @@ exports.patchAccount = function(req, res, next) {
 exports.deleteAccount = function(req, res, next) {
   console.log('-> deleteAccount');
 
+  req.assert('password', 'Password is required.').notEmpty();
+  validate(req.validationErrors(), res);
+
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
     user.comparePassword(req.body.password, function(err, isMatch) {
-      if (!isMatch) return res.status(401).send({ message: 'Wrong email and/or password.' });
+      if (!isMatch) return res.status(401).send({ message: 'Wrong password.' });
       User.remove({ _id: user.id }, function(err) {
         if (err) return next(err);
         res.status(200).end();
@@ -71,6 +83,10 @@ exports.deleteAccount = function(req, res, next) {
  */
 exports.postPassword = function(req, res, next) {
   console.log('-> postPassword');
+
+  req.assert('oldPassword', 'Current password is required.').notEmpty();
+  req.assert('newPassword', 'New password must be at least 4 characters long.').len(4);
+  validate(req.validationErrors(), res);
 
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
@@ -96,6 +112,10 @@ exports.postPassword = function(req, res, next) {
  */
 exports.postEmail = function(req, res, next) {
   console.log('-> postEmail');
+
+  req.assert('email', 'Invalid email address.').isEmail();
+  req.assert('password', 'Password is required.').notEmpty();
+  validate(req.validationErrors(), res);
 
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
