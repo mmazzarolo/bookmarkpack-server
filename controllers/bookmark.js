@@ -3,6 +3,8 @@
 var _ = require('lodash');
 var async = require('async');
 var request = require('request');
+var Busboy = require('busboy');
+var cheerio = require('cheerio');
 
 var User = require('../models/User');
 var Bookmark = require('../models/Bookmark');
@@ -10,7 +12,7 @@ var Bookmark = require('../models/Bookmark');
 /**
  * app.param {bookmark}
  */
-exports.bookmark = function(req, res, next, id) {
+ exports.bookmark = function(req, res, next, id) {
   console.log('Requested bookmark: ' + id);
   var bookmark = _.find(req.user.bookmarks, function(item){
     return item._id == id;
@@ -28,7 +30,7 @@ exports.bookmark = function(req, res, next, id) {
  * @param {boolean} extractFavicon - Extract the favicon?
  * @callback {function} done - Callback.
  */
-function extractFromUrl(url, extractTitle, extractFavicon, done) {
+ function extractFromUrl(url, extractTitle, extractFavicon, done) {
 
   async.parallel({
     title: function(done) {
@@ -94,7 +96,7 @@ function extractFaviconFromUrl(url, done) {
  * @param {bookmark}/{[bookmark]} body - A single bookmark or an array of bookmarks.
  * @param {bookmark}/{[bookmark]} - The single updated bookmark or the array of updated bookmarks.
  */
-exports.postMyBookmarks = function(req, res, next) {
+ exports.postMyBookmarks = function(req, res, next) {
   console.log('-> postBookmarks');
 
   var extractTitle = (_.indexOf(req.query.extract, 'title') != -1);
@@ -119,7 +121,7 @@ exports.postMyBookmarks = function(req, res, next) {
       var newBookmark = new Bookmark({
         url: bookmark.url,
         name: bookmark.name || results.title,
-        favicon: results.favicon
+        favicon: bookmark.favicon || results.favicon
       });
       resBookmarks.push(newBookmark);
       complete();
@@ -130,14 +132,14 @@ exports.postMyBookmarks = function(req, res, next) {
     User.findById(req.user.id, function(err, user) {
       if (err) return next(err);
       for (var i = 0; i < resBookmarks.length; i++) user.bookmarks.push(resBookmarks[i]);
-      user.save(function(err) {
-        if (err) return next(err);
-        if (isReqArray) {
-          res.status(200).send(resBookmarks).end();
-        } else {
-          res.status(200).send(resBookmarks[0]).end();
-        }
-      });
+        user.save(function(err) {
+          if (err) return next(err);
+          if (isReqArray) {
+            res.status(200).send(resBookmarks).end();
+          } else {
+            res.status(200).send(resBookmarks[0]).end();
+          }
+        });
     });
   });
 };
@@ -151,7 +153,7 @@ exports.postMyBookmarks = function(req, res, next) {
  *                                     Every submitted bookmark must have an _id.
  * @return {bookmark} - The updated bookmark.
  */
-exports.patchMyBookmark = function(req, res, next) {
+ exports.patchMyBookmark = function(req, res, next) {
   console.log('-> patchBookmark');
 
   var extractTitle = (_.indexOf(req.query.extract, 'title') != -1);
@@ -201,7 +203,7 @@ exports.patchMyBookmark = function(req, res, next) {
         }
       });
     });
-  });
+});
 };
 
 /**
@@ -211,7 +213,7 @@ exports.patchMyBookmark = function(req, res, next) {
  *
  * @param {bookmark/[bookmarks]} body - The id or an array of id of the bookmarks to delete.
  */
-exports.deleteMyBookmark = function(req, res, next) {
+ exports.deleteMyBookmark = function(req, res, next) {
   console.log('-> deleteBookmark');
 
   var reqBookmarks = [];
@@ -238,11 +240,84 @@ exports.deleteMyBookmark = function(req, res, next) {
   });
 };
 
+var Transform = require('stream').Transform;
+var parser = new Transform();
+parser._transform = function(data, encoding, done) {
+  this.push(data);
+  done();
+};
+
+/**
+ * POST user/bookmarks/import
+ *
+ * Adds the Chrome exported bookmarks to the current user.
+ *
+ * @param {file} - Bookmarks exported from Chrome in HTML format.
+ */
+ exports.postImport = function(req, res, next) {
+  console.log('-> postImport');
+
+  var html = '';
+  var newBody = [];
+  var busboy = new Busboy({
+    headers: req.headers,
+    limits: { files: 1, fileSize: 1024 }
+  });
+
+  busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
+    console.log('File [' + fieldname + ']: filename: ' + filename + ', encoding: ' + encoding + ', mimetype: ' + mimetype);
+    if (mimetype != 'text/html') {
+      req.unpipe(busboy);
+      res.writeHead(400, { 'Connection': 'close', 'Content-Type': 'application/json' });
+      res.write(JSON.stringify({ 'message' : 'Wrong input file.' }));
+      res.end();
+      return;
+    }
+    file.on('data', function(data) {
+      console.log('File [' + fieldname + '] got ' + data.length + ' bytes');
+      html += data.toString();
+    });
+    file.on('limit', function() {
+      console.log('Limit reached!');
+      req.unpipe(busboy);
+      res.writeHead(400, { 'Connection': 'close', 'Content-Type': 'application/json' });
+      res.write(JSON.stringify({ 'message' : 'The uploaded file is too big for being processed.' }));
+      res.end();
+      return;
+    });
+    file.on('end', function() {
+      var $ = cheerio.load(html);
+      $('A').each(function(i, elem) {
+        var url = $(this).attr('href');
+        var name = $(this).text();
+        var favicon = $(this).attr('icon');
+        newBody.push({
+          'url' : url,
+          'name' : name,
+          'favicon' : favicon,
+        });
+      });
+
+      console.log('File [' + fieldname + '] Finished');
+    });
+  });
+  busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
+    console.log('Field [' + fieldname + ']: value: ' + inspect(val));
+  });
+  busboy.on('finish', function() {
+    console.log('Done parsing form!');
+    req.body = newBody;
+    return next();
+    res.status(200).end();
+  });
+  req.pipe(busboy);
+};
+
 /**
  * GET :username/:bookmark
  * Get a bookmark.
  */
-exports.getBookmark = function(req, res) {
+ exports.getBookmark = function(req, res) {
   res.status(200).send({ bookmark : req.bookmark });
 };
 

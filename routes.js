@@ -46,4 +46,5 @@ module.exports = function(app) {
   app.patch('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.patchMyBookmark);
   app.delete('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.deleteMyBookmark);
   app.get('/users/:username/bookmarks/:bookmark', bookmarkController.getBookmark);
+  app.post('/user/bookmarks/import', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.postImport, bookmarkController.postMyBookmarks);
  };
