@@ -8,7 +8,7 @@ var User = require('../models/User');
 exports.getAccount = function(req, res, next) {
   console.log('-> getAccount');
 
-  User.findById(req.me, function(err, user) {
+  User.findById(req.me, '-bookmarks', function(err, user) {
     if (err) return next(err);
     res.send(user);
   });

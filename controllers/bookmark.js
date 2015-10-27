@@ -250,9 +250,9 @@ parser._transform = function(data, encoding, done) {
 /**
  * POST user/bookmarks/import
  *
- * Adds the Chrome exported bookmarks to the current user.
+ * Adds the exported bookmarks to the current user.
  *
- * @param {file} - Bookmarks exported from Chrome in HTML format.
+ * @param {file} - Bookmarks exported in HTML format.
  */
  exports.postImport = function(req, res, next) {
   console.log('-> postImport');
@@ -311,6 +311,62 @@ parser._transform = function(data, encoding, done) {
     res.status(200).end();
   });
   req.pipe(busboy);
+};
+
+
+/**
+ * POST user/bookmarks/github
+ *
+ * Adds the GitHub starred repositories from the specified username.
+ *
+ * @param {string} body.username - The GitHub username of the owner of the starred repositories to import.
+ */
+ exports.postGithub = function(req, res, next) {
+  console.log('-> postGithub');
+
+  var re = new RegExp('^[A-Z0-9_]*$', 'i');
+  if (typeof(req.body.username) != 'string' || !re.test(req.body.username))
+    return res.status(400).send({ message: 'Invalid username' }).end();
+
+  var newBody = [];
+  var githubUrl = 'https://api.github.com/users/' + req.body.username + '/starred'
+
+  async.parallel({
+    favicon: function(done) {
+      extractFaviconFromUrl('https://github.com', done);
+    },
+    repos: function(done) {
+      var options = {
+          url: githubUrl,
+          method: 'GET',
+          headers: {'user-agent': 'node.js'}
+      };
+      request(options, function (err, response, body) {
+        if (response.statusCode != 200) {
+          return res.status(404).send({ message: 'User not found' }).end();
+        }
+        done(err, JSON.parse(body));
+      });
+    }
+  },
+  function(err, results) {
+    if (err) return next(err);
+    async.each(results.repos, function(repo, complete) {
+      var url = repo.html_url;
+      var name = repo.name;
+      var favicon = results.favicon;
+      newBody.push({
+        'url' : url,
+        'name' : name,
+        'favicon' : favicon
+      });
+      complete();
+    }, function(err) {
+      if (err) return next(err);
+      req.body = newBody;
+      return next();
+    });
+  });
 };
 
 /**
