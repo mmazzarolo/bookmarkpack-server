@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 var bookmarkSchema = new mongoose.Schema({
   url: { type: String, required: true },
   name: String,
+  notes: String,
   updated: { type: Date, default: Date.now },
   favicon: String,
   tags: [String],

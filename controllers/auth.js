@@ -27,10 +27,6 @@ function createJWT(user) {
   return jwt.encode(payload, secretsConfig.tokenSecret);
 }
 
-function validate(errors, res) {
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-}
-
 /**
  * POST /auth/login
  *
@@ -47,7 +43,8 @@ exports.postLogin = function(req, res, next) {
 
   req.assert('email', 'Email is required.').notEmpty();
   req.assert('password', 'Password is required.').notEmpty();
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err);
@@ -76,7 +73,8 @@ exports.postSignup = function(req, res, next) {
   req.assert('password', 'Password must be at least 4 characters long.').len(4);
   req.assert('username', 'Reserved username.').optional().notReserved();
   req.assert('username', 'Only letters and number allowed for username.').optional().isClean();
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   User.findOne({ email: req.body.email }, function(err, existingUser) {
     if (err) return next(err);
@@ -269,7 +267,8 @@ exports.postReset = function(req, res, next) {
 
   req.assert('email', 'Email address is required.').notEmpty();
   req.assert('email', 'Invalid email address.').isEmail();
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   async.waterfall([
     // Create a crypted token
@@ -319,7 +318,8 @@ exports.postResetConfirm = function(req, res, next) {
 
   req.assert('password', 'Password is required.').notEmpty();
   req.assert('password', 'Password must be at least 4 characters long.').len(4);
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   async.waterfall([
     // Search the token user
@@ -364,7 +364,8 @@ exports.postVerify = function(req, res, next) {
 
   req.assert('email', 'Email address is required.').notEmpty();
   req.assert('email', 'Invalid email address.').isEmail();
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   async.waterfall([
     // Create a crypted token

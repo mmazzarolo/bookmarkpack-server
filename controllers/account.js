@@ -2,10 +2,6 @@
 
 var User = require('../models/User');
 
-function validate(errors, res) {
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors });
-}
-
 /**
  * GET /account
  */
@@ -32,7 +28,8 @@ exports.patchAccount = function(req, res, next) {
   req.assert('username', 'Reserved username.').optional().notReserved();
   req.assert('username', 'Only letters and number allowed for username.').optional().isClean();
   req.assert('picture', 'Invalid picture URL.').optional().isURL();
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   User.findById(req.me, function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
@@ -59,7 +56,8 @@ exports.deleteAccount = function(req, res, next) {
   console.log('-> deleteAccount');
 
   req.assert('password', 'Password is required.').notEmpty();
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
@@ -86,7 +84,8 @@ exports.postPassword = function(req, res, next) {
 
   req.assert('oldPassword', 'Current password is required.').notEmpty();
   req.assert('newPassword', 'New password must be at least 4 characters long.').len(4);
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
@@ -115,7 +114,8 @@ exports.postEmail = function(req, res, next) {
 
   req.assert('email', 'Invalid email address.').isEmail();
   req.assert('password', 'Password is required.').notEmpty();
-  validate(req.validationErrors(), res);
+  var errors = req.validationErrors();
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
 
   User.findById(req.me, '+password', function(err, user) {
     if (!user) return res.status(400).send({ message: 'User not found.' });
