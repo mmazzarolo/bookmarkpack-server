@@ -293,7 +293,6 @@ var Bookmark = require('../models/Bookmark');
       async.each(repos, function(repo, complete) {
         var url = repo.html_url;
         var name = repo.name;
-        var favicon = favicon;
         bookmarks.push({
           'url' : url,
           'name' : name,
