@@ -55,7 +55,6 @@ var Bookmark = require('../models/Bookmark');
     req.sanitize('url').trim().toString();
     req.assert('url', 'URL is required.').notEmpty();
     req.assert('url', 'Invalid URL.').isURL();
-    req.assert('name', 'Invalid name.').optional().isClean();
     req.assert('name', 'Name must have less than 120 characters.').optional().isLength(0, 120);
     req.assert('notes', 'Notes must have less than 840 characters.').optional().isLength(0, 840);
     req.assert('hidden', 'Invalid hidden property.').optional().isBoolean();
@@ -106,7 +105,6 @@ var Bookmark = require('../models/Bookmark');
     req.assert('_id', 'Malformed bookmark id.').isMongoId();
     req.assert('url', 'URL is required.').optional().notEmpty();
     req.assert('url', 'Invalid URL.').optional().isURL();
-    req.assert('name', 'Invalid name.').optional().isClean();
     req.assert('name', 'Name must have less than 120 characters.').optonal().len(0, 120);
     req.assert('notes', 'Notes must have less than 840 characters.').optional().len(0, 840);
     req.assert('hidden', 'Invalid hidden property.').optional().isBoolean();
@@ -167,7 +165,12 @@ var Bookmark = require('../models/Bookmark');
     reqBookmarks[0] = req.body;
   }
 
-  User.findById(req.user._id, function(err, user) {
+  for (var i = 0; i < reqBookmarks.length; i++) {
+    req.assert('_id', 'Malformed bookmark id.').isMongoId();
+    var errors = req.validationErrors();
+    if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end();
+  }
+  User.findById(req.user.id, '+bookmarks', function(err, user) {
     if (err) return next(err);
 
     async.each(reqBookmarks, function(bookmark, complete) {
