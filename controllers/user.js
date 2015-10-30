@@ -1,19 +1,19 @@
-'use strict';
+'use strict'
 
-var User = require('../models/User');
+var User = require('../models/User')
 
 /**
  * app.param {username}
  */
 exports.username = function(req, res, next, username) {
-  console.log('Requested username: ' + username);
+  console.log('Requested username: ' + username)
   User.findOne({ username: username }, function(err, user) {
-    if (err) return next(err);
-    if (!user) return res.status(404).send({ message: 'Unknown user.' });
-    req.user = user;
-    next();
-  });
-};
+    if (err) return next(err)
+    if (!user) return res.status(404).send({ message: 'Unknown user.' })
+    req.user = user
+    next()
+  })
+}
 
 /**
  * GET user
@@ -23,8 +23,8 @@ exports.username = function(req, res, next, username) {
  * @return {user} - The logged in user.
  */
 exports.getMe = function(req, res) {
-  return res.status(200).send(req.user);
-};
+  return res.status(200).send(req.user)
+}
 
 /**
  * GET users/:username
@@ -34,5 +34,5 @@ exports.getMe = function(req, res) {
  * @return {user} - The specific requested user.
  */
 exports.getUser = function(req, res) {
-  return res.status(200).send(req.user);
-};
+  return res.status(200).send(req.user)
+}

@@ -1,16 +1,16 @@
-var request = require('supertest');
-var chai = require('chai');
-var should = chai.should();
+var request = require('supertest')
+var chai = require('chai')
+var should = chai.should()
 
-var app = require('../../app.js');
-var User = require('../../models/User');
+var app = require('../../app.js')
+var User = require('../../models/User')
 
 var alpha = {
   username: 'alpha',
   email: 'alpha@gmail.com',
   password: 'asdf'
 }
-var token;
+var token
 
 var bookmarks = [
   { url: 'https://www.npmjs.com/' },
@@ -28,7 +28,7 @@ var bookmarks = [
   // { url: 'https://github.com/' },
   // { url: 'http://git-scm.com/' },
   { url: 'https://www.linkedin.com/' }
-];
+]
 
 
 /**
@@ -39,9 +39,9 @@ describe('POST /auth/signup', function() {
     request(app)
       .post('/auth/signup')
       .send(alpha)
-      .expect(200, done);
-  });
-});
+      .expect(200, done)
+  })
+})
 
 /**
  * User login.
@@ -53,13 +53,13 @@ describe('POST /auth/login', function() {
       .send({ email: 'alpha@gmail.com', password: 'asdf' })
       .expect(200)
       .end(function(err, res) {
-        if (err) done(err);
-        token = res.body.token;
-        res.body.should.have.property('token');
-        done();
-      });
-  });
-});
+        if (err) done(err)
+        token = res.body.token
+        res.body.should.have.property('token')
+        done()
+      })
+  })
+})
 
 /**
  * User validation.
@@ -69,23 +69,23 @@ describe('POST /auth/verify', function() {
     request(app)
       .post('/auth/verify')
       .send({ email: 'alpha@gmail.com' })
-      .expect(200, done);
-  });
-});
+      .expect(200, done)
+  })
+})
 
 describe('User validation', function() {
   it('should validate user by email', function(done) {
     User.findOne({ email: 'alpha@gmail.com' }, function(err, user) {
-      if (err) return done(err);
-      user.verified.should.equal(false);
-      user.verified = true;
+      if (err) return done(err)
+      user.verified.should.equal(false)
+      user.verified = true
       user.save(function(err) {
-        if (err) return next(err);
-        done();
-      });
-    });
-  });
-});
+        if (err) return next(err)
+        done()
+      })
+    })
+  })
+})
 
 /**
  * Create a new bookmark.
@@ -96,9 +96,9 @@ describe('POST /user/bookmarks', function() {
       .post('/user/bookmarks?extract=favicon')
       .set('Authorization', 'Bearer ' + token)
       .send(bookmarks)
-      .expect(200, done);
-  });
-});
+      .expect(200, done)
+  })
+})
 
 /**
  * User delete.

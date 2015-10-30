@@ -9,7 +9,7 @@ exports.resetMail = function(email, token) {
       'http://localhost:8000/#/reset/' + token + '\n\n' +
       'If you did not request this, please ignore this email and your password will remain unchanged.\n'
   }
-};
+}
 
 exports.resetConfirmMail = function(email) {
   return {
@@ -20,7 +20,7 @@ exports.resetConfirmMail = function(email) {
       'Hello,\n\n' +
       'This is a confirmation that the password for your account ' + email + ' has just been changed.\n'
   }
-};
+}
 
 exports.verifyMail = function(email, token) {
   return {
@@ -33,4 +33,4 @@ exports.verifyMail = function(email, token) {
       'http://localhost:8000/#/verify/' + token + '\n\n' +
       'If you did not request this, please ignore this email and the account will be deleted.\n'
   }
-};
+}

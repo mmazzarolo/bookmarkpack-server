@@ -1,6 +1,6 @@
-'use strict';
+'use strict'
 
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
 
 var bookmarkSchema = new mongoose.Schema({
   url: { type: String, required: true },
@@ -10,6 +10,6 @@ var bookmarkSchema = new mongoose.Schema({
   favicon: String,
   tags: [String],
   hidden: Boolean
-});
+})
 
-module.exports = mongoose.model('Bookmark', bookmarkSchema);
+module.exports = mongoose.model('Bookmark', bookmarkSchema)

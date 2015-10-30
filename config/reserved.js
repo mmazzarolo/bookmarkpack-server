@@ -340,4 +340,4 @@ var usernames = [
   'yourdomain',
 ]
 
-exports.usernames = usernames;
+exports.usernames = usernames
