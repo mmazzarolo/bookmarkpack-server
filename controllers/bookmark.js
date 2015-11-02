@@ -40,31 +40,9 @@ var Bookmark = require('../models/Bookmark')
   var extractTitle = (_.indexOf(req.query.extract, 'title') != -1)
   var extractFavicon = (_.indexOf(req.query.extract, 'favicon') != -1)
 
-  var reqBookmarks = []
-  var isReqArray = false
-
-  if (req.body.constructor === Array) isReqArray = true
-
-  if (isReqArray) {
-    reqBookmarks = req.body
-  } else {
-    reqBookmarks[0] = req.body
-  }
-
-  for (var i = 0; i < reqBookmarks.length; i++) {
-    req.sanitize('url').trim().toString()
-    req.assert('url', 'URL is required.').notEmpty()
-    req.assert('url', 'Invalid URL.').isURL()
-    req.assert('name', 'Name must have less than 120 characters.').optional().isLength(0, 120)
-    req.assert('notes', 'Notes must have less than 840 characters.').optional().isLength(0, 840)
-    req.assert('hidden', 'Invalid hidden property.').optional().isBoolean()
-    var errors = req.validationErrors()
-    if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
-  }
-
-  addBookmarks(reqBookmarks, extractTitle, extractFavicon, req.user.id, function(err, results) {
+  addBookmarks(req.body.bookmarks, extractTitle, extractFavicon, req.user.id, function(err, results) {
     if (err) return next(err)
-    if (isReqArray) {
+    if (req.isReqArray) {
       res.status(200).send(results).end()
     } else {
       res.status(200).send(results[0]).end()

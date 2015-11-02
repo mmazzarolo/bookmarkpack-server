@@ -8,6 +8,8 @@ module.exports = function(app) {
   var accountController = require('./controllers/account')
 
   var authMiddleware = require('./middlewares/auth')
+  var formatMiddleware = require('./middlewares/format')
+  var validMiddleware = require('./middlewares/validation')
 
   /**
    * Auth routes.
@@ -41,12 +43,36 @@ module.exports = function(app) {
   /**
    * Bookmark routes.
    */
-  // app.param('bookmark', bookmarkController.bookmark);
-  app.get('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.getMyBookmarks)
-  app.post('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.postMyBookmarks)
-  app.patch('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.patchMyBookmark)
-  app.delete('/user/bookmarks', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.deleteMyBookmark)
-  app.post('/user/bookmarks/import', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.postImport)
-  app.post('/user/bookmarks/github', authMiddleware.isAuthenticated, authMiddleware.getAuthenticatedUser, bookmarkController.postGithub)
+  app.get('/user/bookmarks',
+    authMiddleware.isAuthenticated,
+    authMiddleware.getAuthenticatedUser,
+    bookmarkController.getMyBookmarks)
+
+  app.post('/user/bookmarks',
+    authMiddleware.isAuthenticated,
+    authMiddleware.getAuthenticatedUser,
+    formatMiddleware.formatBookmarks,
+    validMiddleware.validatePostBookmarks,
+    bookmarkController.postMyBookmarks)
+
+  app.patch('/user/bookmarks',
+    authMiddleware.isAuthenticated,
+    authMiddleware.getAuthenticatedUser,
+    bookmarkController.patchMyBookmark)
+
+  app.delete('/user/bookmarks',
+    authMiddleware.isAuthenticated,
+    authMiddleware.getAuthenticatedUser,
+    bookmarkController.deleteMyBookmark)
+
+  app.post('/user/bookmarks/import',
+    authMiddleware.isAuthenticated,
+    authMiddleware.getAuthenticatedUser,
+    bookmarkController.postImport)
+
+  app.post('/user/bookmarks/github',
+    authMiddleware.isAuthenticated,
+    authMiddleware.getAuthenticatedUser,
+    bookmarkController.postGithub)
   // app.get('/users/:username/bookmarks/:bookmark', bookmarkController.getBookmark);
  }
