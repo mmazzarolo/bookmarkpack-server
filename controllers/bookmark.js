@@ -66,39 +66,12 @@ var Bookmark = require('../models/Bookmark')
   var extractTitle = (_.indexOf(req.query.extract, 'title') != -1)
   var extractFavicon = (_.indexOf(req.query.extract, 'favicon') != -1)
 
-  var reqBookmarks = []
   var resBookmarks = []
-  var isReqArray = false
-
-  if (req.body.constructor === Array) isReqArray = true
-
-  if (isReqArray) {
-    reqBookmarks = req.body
-  } else {
-    reqBookmarks[0] = req.body
-  }
-
-  for (var i = 0; i < reqBookmarks.length; i++) {
-    req.sanitize('url').trim().toString()
-    req.assert('_id', 'Malformed bookmark id.').isMongoId()
-    req.assert('url', 'URL is required.').optional().notEmpty()
-    req.assert('url', 'Invalid URL.').optional().isURL()
-    req.assert('name', 'Name must have less than 120 characters.').optonal().len(0, 120)
-    req.assert('notes', 'Notes must have less than 840 characters.').optional().len(0, 840)
-    req.assert('hidden', 'Invalid hidden property.').optional().isBoolean()
-    var errors = req.validationErrors()
-    if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
-  }
 
   User.findById(req.user.id, function(err, user) {
     if (err) return next(err)
 
     async.each(reqBookmarks, function(reqBookmark, complete) {
-
-      console.log(reqBookmark)
-      if (!reqBookmark._id) {
-        return res.status(400).send({ message: 'One or more of the submitted bookmarks have no _id' }).end()
-      }
 
       extractFromUrl(reqBookmark.url, extractTitle, extractFavicon, function(err, results) {
         if (err) return next(err)
@@ -115,10 +88,10 @@ var Bookmark = require('../models/Bookmark')
       if (err) return next(err)
       user.save(function(err) {
         if (err) return next(err)
-        if (isReqArray) {
-          res.status(200).send(resBookmarks).end()
+        if (req.isReqArray) {
+          return res.status(200).send(resBookmarks)
         } else {
-          res.status(200).send(resBookmarks[0]).end()
+          return res.status(200).send(resBookmarks[0])
         }
       })
     })
@@ -132,22 +105,9 @@ var Bookmark = require('../models/Bookmark')
  *
  * @param {bookmark/[bookmarks]} body - The id or an array of id of the bookmarks to delete.
  */
- exports.deleteMyBookmark = function(req, res, next) {
+ exports.deleteMyBookmarks = function(req, res, next) {
   console.log('-> deleteBookmark')
 
-  var reqBookmarks = []
-
-  if (req.body.constructor === Array) {
-    reqBookmarks = req.body
-  } else {
-    reqBookmarks[0] = req.body
-  }
-
-  for (var i = 0; i < reqBookmarks.length; i++) {
-    req.assert('_id', 'Malformed bookmark id.').isMongoId()
-    var errors = req.validationErrors()
-    if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
-  }
   User.findById(req.user.id, '+bookmarks', function(err, user) {
     if (err) return next(err)
 
@@ -158,7 +118,7 @@ var Bookmark = require('../models/Bookmark')
       if (err) return next(err)
       user.save(function(err) {
         if (err) return next(err)
-        res.status(200).end()
+        return res.status(200)
       })
     })
   })
