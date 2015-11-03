@@ -5,6 +5,7 @@ var async = require('async')
 var Busboy = require('busboy')
 var request = require('request')
 var cheerio = require('cheerio')
+var validator = require('validator')
 
 var User = require('../models/User')
 var Bookmark = require('../models/Bookmark')
@@ -40,15 +41,71 @@ var Bookmark = require('../models/Bookmark')
   var extractTitle = (_.indexOf(req.query.extract, 'title') != -1)
   var extractFavicon = (_.indexOf(req.query.extract, 'favicon') != -1)
 
-  addBookmarks(req.body.bookmarks, extractTitle, extractFavicon, req.user.id, function(err, results) {
-    if (err) return next(err)
-    if (req.isReqArray) {
-      res.status(200).send(results).end()
-    } else {
-      res.status(200).send(results[0]).end()
-    }
-  })
+  var resBookmarks = []
+  var validationErrors = []
 
+  User.findById(req.me, '+bookmarks', function(err, user) {
+    if (err) return next(err)
+    async.forEachOf(req.body, function(bookmark, index, complete) {
+
+      validationErrors = validationErrors.concat(addBookmarksErrors(bookmark, index))
+      if (validationErrors.length > 0) return complete()
+
+      extractFromUrl(bookmark.url, extractTitle, extractFavicon, function(err, results) {
+        if (err) return next(err)
+        var newBookmark = new Bookmark({
+          url: bookmark.url,
+          name: bookmark.name || results.title,
+          favicon: bookmark.favicon || results.favicon
+        })
+        user.bookmarks.push(newBookmark)
+        resBookmarks.push(newBookmark)
+        complete()
+      })
+
+    }, function(err) {
+      if (err) return next(err)
+      if (validationErrors.length > 0)
+        return res.status(422).send({ message: 'Validation error.', errors: validationErrors })
+      user.save(function(err) {
+        if (err) return next(err)
+        if (req.isReqArray) {
+          return res.status(200).send(resBookmarks)
+        } else {
+          return res.status(200).send(resBookmarks[0])
+        }
+      })
+    })
+  })
+}
+
+function addBookmarksErrors(bookmark, index) {
+  var errors = []
+  if (!validator.isURL(bookmark.url)) {
+    errors.push({
+      param: 'url',
+      value: bookmark.url,
+      message : 'Invalid URL.',
+      index: index
+    })
+  }
+  if (typeof bookmark.name !== 'undefined' && !validator.isLength(bookmark.name, 0, 240)) {
+    errors.push({
+      param: 'name',
+      value: bookmark.name,
+      message : 'Name must have less than 240 characters.',
+      index: index
+    })
+  }
+  if (typeof bookmark.notes !== 'undefined' && !validator.isLength(bookmark.notes, 0, 820)) {
+    errors.push({
+      param: 'notes',
+      value: bookmark.notes,
+      message : 'Notes must have less than 840 characters.',
+      index: index
+    })
+  }
+  return errors
 }
 
 /**
@@ -67,25 +124,35 @@ var Bookmark = require('../models/Bookmark')
   var extractFavicon = (_.indexOf(req.query.extract, 'favicon') != -1)
 
   var resBookmarks = []
+  var validationErrors = []
 
-  User.findById(req.user.id, function(err, user) {
+  User.findById(req.me, '+bookmarks', function(err, user) {
     if (err) return next(err)
+    async.forEachOf(req.body, function(bookmark, index, complete) {
 
-    async.each(reqBookmarks, function(reqBookmark, complete) {
+      validationErrors = validationErrors.concat(editBookmarksErrors(bookmark, index))
+      if (validationErrors.length > 0) return complete()
 
-      extractFromUrl(reqBookmark.url, extractTitle, extractFavicon, function(err, results) {
+      extractFromUrl(bookmark.url, extractTitle, extractFavicon, function(err, results) {
         if (err) return next(err)
-        var updBookmark = user.bookmarks.id(reqBookmark._id)
-        updBookmark.name = reqBookmark.name || results.title || updBookmark.name
-        updBookmark.url = reqBookmark.url || updBookmark.url
-        updBookmark.favicon = results.favicon || updBookmark.favicon
-        updBookmark.tags = reqBookmark.tags || updBookmark.tags
-        resBookmarks.push(updBookmark)
+        bookmark.name = bookmark.name || results.title
+        bookmark.favicon = bookmark.favicon || results.favicon
+
+        var oldBookmark = user.bookmarks.id(bookmark.id)
+        if (!oldBookmark)
+        return res.status(404).send({ message: 'Bookmark not found.', id: bookmark.id })
+
+        oldBookmark = bookmark
+        resBookmarks.push(bookmark)
+
         complete()
       })
 
     }, function(err) {
       if (err) return next(err)
+        console.log(validationErrors)
+      if (validationErrors.length > 0)
+        return res.status(422).send({ message: 'Validation error.', errors: validationErrors })
       user.save(function(err) {
         if (err) return next(err)
         if (req.isReqArray) {
@@ -98,6 +165,43 @@ var Bookmark = require('../models/Bookmark')
   })
 }
 
+function editBookmarksErrors(bookmark, index) {
+  var errors = []
+  if (!validator.isMongoId(bookmark.id)) {
+    errors.push({
+      param: 'id',
+      value: bookmark.id,
+      message : 'Invalid bookmark ID.',
+      index: index
+    })
+  }
+  if (!validator.isURL(bookmark.url)) {
+    errors.push({
+      param: 'url',
+      value: bookmark.url,
+      message : 'Invalid URL.',
+      index: index
+    })
+  }
+  if (typeof bookmark.name !== 'undefined' && !validator.isLength(bookmark.name, 0, 240)) {
+    errors.push({
+      param: 'name',
+      value: bookmark.name,
+      message : 'Name must have less than 240 characters.',
+      index: index
+    })
+  }
+  if (typeof bookmark.notes !== 'undefined' && !validator.isLength(bookmark.notes, 0, 820)) {
+    errors.push({
+      param: 'notes',
+      value: bookmark.notes,
+      message : 'Notes must have less than 840 characters.',
+      index: index
+    })
+  }
+  return errors
+}
+
 /**
  * DELETE user/bookmarks/
  *
@@ -108,20 +212,45 @@ var Bookmark = require('../models/Bookmark')
  exports.deleteMyBookmarks = function(req, res, next) {
   console.log('-> deleteBookmark')
 
-  User.findById(req.user.id, '+bookmarks', function(err, user) {
+  var validationErrors = []
+
+  User.findById(req.me, '+bookmarks', function(err, user) {
     if (err) return next(err)
 
-    async.each(reqBookmarks, function(bookmark, complete) {
-      user.bookmarks.id(bookmark._id).remove()
+    async.forEachOf(req.body, function(bookmark, index, complete) {
+
+      validationErrors = validationErrors.concat(deleteBookmarksErrors(bookmark, index))
+      if (validationErrors.length > 0) return complete()
+
+      var bookmarkToDelete = user.bookmarks.id(bookmark.id)
+      if (!bookmarkToDelete)
+        return res.status(404).send({ message: 'Bookmark not found.', id: bookmark.id })
+
+      bookmarkToDelete.remove()
       complete()
     }, function(err) {
       if (err) return next(err)
+      if (validationErrors.length > 0)
+        return res.status(422).send({ message: 'Validation error.', errors: validationErrors })
       user.save(function(err) {
         if (err) return next(err)
-        return res.status(200)
+        return res.status(200).end()
       })
     })
   })
+}
+
+function deleteBookmarksErrors(bookmark, index) {
+  var errors = []
+  if (!validator.isMongoId(bookmark.id)) {
+    errors.push({
+      param: 'id',
+      value: bookmark.id,
+      message : 'Invalid bookmark ID.',
+      index: index
+    })
+  }
+  return errors
 }
 
 /**

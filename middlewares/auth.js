@@ -51,6 +51,6 @@ exports.getAuthenticatedUser = function(req, res, next) {
 exports.isAuthorized = function(req, res, next) {
   console.log('-> isAuthorized')
 
-  if (!req.user._id.equals(req.me)) return res.status(203).send({ message: 'Not authorized.' })
+  if (!req.user.id.equals(req.me)) return res.status(203).send({ message: 'Not authorized.' })
   next()
 }

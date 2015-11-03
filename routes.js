@@ -52,20 +52,18 @@ module.exports = function(app) {
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
     formatMiddleware.formatBookmarks,
-    validMiddleware.validateBookmarksJson,
-    validMiddleware.postMyBookmarks,
     bookmarkController.postMyBookmarks)
 
   app.patch('/user/bookmarks',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
+    formatMiddleware.formatBookmarks,
     bookmarkController.patchMyBookmark)
 
   app.delete('/user/bookmarks',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
-    validMiddleware.validateBookmarksJson,
-    validMiddleware.deleteMyBookmarks,
+    formatMiddleware.formatBookmarks,
     bookmarkController.deleteMyBookmarks)
 
   app.post('/user/bookmarks/import',

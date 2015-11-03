@@ -56,6 +56,17 @@ userSchema.methods.comparePassword = function(password, done) {
   })
 }
 
+/**
+ * Transforming _id to id.
+ */
+userSchema.set('toJSON', {
+  transform: function(doc, ret, options) {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+  }
+})
+
 userSchema.plugin(uniqueValidator, { message: 'The {PATH} "{VALUE}" is already in use.' })
 
 module.exports = mongoose.model('User', userSchema)
