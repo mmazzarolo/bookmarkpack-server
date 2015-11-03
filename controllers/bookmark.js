@@ -115,7 +115,7 @@ function addBookmarksErrors(bookmark, index) {
  * Updates some bookmark info.
  *
  * @param {bookmark/[bookmark]} body - The properties of the bookmarks that must be updated.
- *                                     Every submitted bookmark must have an _id.
+ *                                     Every submitted bookmark must have at least the id.
  * @return {bookmark} - The updated bookmark.
  */
  exports.editBookmarks = function(req, res, next) {
@@ -136,14 +136,19 @@ function addBookmarksErrors(bookmark, index) {
 
       extractFromUrl(bookmark.url, extractTitle, extractFavicon, function(err, results) {
         if (err) return next(err)
-        bookmark.name = bookmark.name || results.title
-        bookmark.favicon = bookmark.favicon || results.favicon
+        bookmark.name = results.title || bookmark.name
+        bookmark.favicon = results.favicon || bookmark.favicon
 
         var oldBookmark = user.bookmarks.id(bookmark.id)
         if (!oldBookmark)
-        return res.status(404).send({ message: 'Bookmark not found.', id: bookmark.id })
+          return res.status(404).send({ message: 'Bookmark not found.', id: bookmark.id })
 
-        oldBookmark = bookmark
+        oldBookmark.url = bookmark.url
+        oldBookmark.name = bookmark.name
+        oldBookmark.notes = bookmark.notes
+        oldBookmark.favicon = bookmark.favicon
+        oldBookmark.tags = bookmark.tags
+        oldBookmark.hidden = bookmark.hidden
         resBookmarks.push(bookmark)
 
         complete()
