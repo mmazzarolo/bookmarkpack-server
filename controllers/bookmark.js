@@ -65,6 +65,7 @@ var Bookmark = require('../models/Bookmark')
 
     }, function(err) {
       if (err) return next(err)
+      console.log(validationErrors)
       if (validationErrors.length > 0)
         return res.status(422).send({ message: 'Validation error.', errors: validationErrors })
       user.save(function(err) {
@@ -264,11 +265,11 @@ function deleteBookmarksErrors(bookmark, index) {
   console.log('-> bookmarkController.import')
 
   var html = ''
-  var bookmarks = []
   var busboy = new Busboy({
     headers: req.headers,
     limits: { files: 1, fileSize: 1000000 }
   })
+  var newBody = []
 
   busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
     console.log('File [' + fieldname + ']: filename: ' + filename + ', encoding: ' + encoding + ', mimetype: ' + mimetype)
@@ -297,13 +298,12 @@ function deleteBookmarksErrors(bookmark, index) {
         var url = $(this).attr('href')
         var name = $(this).text()
         var favicon = $(this).attr('icon')
-        bookmarks.push({
+        newBody.push({
           'url' : url,
           'name' : name,
-          'favicon' : favicon,
+          'favicon' : favicon
         })
       })
-
       console.log('File [' + fieldname + '] Finished')
     })
   })
@@ -312,10 +312,8 @@ function deleteBookmarksErrors(bookmark, index) {
   })
   busboy.on('finish', function() {
     console.log('Done parsing form!')
-    addBookmarks(bookmarks, false, false, req.user.id, function(err, results) {
-      if (err) return next(err)
-      return res.status(200).send(results).end()
-    })
+    req.body = newBody
+    next()
   })
   req.pipe(busboy)
 }
@@ -363,7 +361,7 @@ function deleteBookmarksErrors(bookmark, index) {
       async.each(repos, function(repo, complete) {
         var url = repo.html_url
         var name = repo.name
-        bookmarks.push({
+        newBody.push({
           'url' : url,
           'name' : name,
           'favicon' : favicon
@@ -371,56 +369,15 @@ function deleteBookmarksErrors(bookmark, index) {
         complete()
       }, function(err) {
         if (err) return next(err)
-        return done(null, bookmarks)
+        return done()
       })
-    },
-    // Add the bookmarks
-    function(bookmarks, done) {
-      addBookmarks(bookmarks, false, false, req.user.id, done)
     }
   ], function(err, results) {
     if (err) return next(err)
-    res.status(200).send(results).end()
+    req.body = newBody
+    next()
   })
 
-}
-
-/**
- * Adds the input bookmarks to the current user.
- *
- * @param {[bookmark]} bookmarks - The array of bookmarks to add.
- * @param {boolean} extractTitle - Extract the title?
- * @param {boolean} extractFavicon - Extract the favicon?
- * @param {string} userId - Id of the current user.
- * @callback {function} done - Callback.
- */
-function addBookmarks(bookmarks, extractTitle, extractFavicon, userId, done) {
-  var resBookmarks = []
-
-  async.each(bookmarks, function(bookmark, complete) {
-
-    extractFromUrl(bookmark.url, extractTitle, extractFavicon, function(err, results) {
-      if (err) return done(err)
-      var newBookmark = new Bookmark({
-        url: bookmark.url,
-        name: bookmark.name || results.title,
-        favicon: bookmark.favicon || results.favicon
-      })
-      resBookmarks.push(newBookmark)
-      complete()
-    })
-
-  }, function(err) {
-    if (err) return done(err)
-    User.findById(userId, '+bookmarks', function(err, user) {
-      if (err) return done(err)
-      for (var i = 0; i < resBookmarks.length; i++) user.bookmarks.push(resBookmarks[i])
-        user.save(function(err) {
-          if (err) return done(err)
-          return done(null, resBookmarks)
-        })
-    })
-  })
 }
 
 /**

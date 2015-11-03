@@ -69,10 +69,12 @@ module.exports = function(app) {
   app.post('/user/bookmarks/import',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
-    bookmarkController.import)
+    bookmarkController.import,
+    bookmarkController.addBookmarks)
 
   app.post('/user/bookmarks/github',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
-    bookmarkController.github)
+    bookmarkController.github,
+    bookmarkController.addBookmarks)
  }
