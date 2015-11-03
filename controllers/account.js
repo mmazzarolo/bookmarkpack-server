@@ -22,8 +22,8 @@ exports.getAccount = function(req, res, next) {
  * @param {string} body.username - New username (optional).
  * @param {string} body.picture - New user picture url (optional).
  */
-exports.patchAccount = function(req, res, next) {
-  console.log('-> patchAccount')
+exports.editAccount = function(req, res, next) {
+  console.log('-> accountController.editAccount')
 
   req.assert('username', 'Reserved username.').optional().notReserved()
   req.assert('username', 'Only letters and number allowed for username.').optional().isClean()
@@ -53,7 +53,7 @@ exports.patchAccount = function(req, res, next) {
  * @param {string} body.password - Current password.
  */
 exports.deleteAccount = function(req, res, next) {
-  console.log('-> deleteAccount')
+  console.log('-> accountController.deleteAccount')
 
   req.assert('password', 'Password is required.').notEmpty()
   var errors = req.validationErrors()
@@ -79,8 +79,8 @@ exports.deleteAccount = function(req, res, next) {
  * @param {string} body.oldPassword - Current password.
  * @param {string} body.newPassword - New password.
  */
-exports.postPassword = function(req, res, next) {
-  console.log('-> postPassword')
+exports.editPassword = function(req, res, next) {
+  console.log('-> accountController.editPassword')
 
   req.assert('oldPassword', 'Current password is required.').notEmpty()
   req.assert('newPassword', 'New password must be at least 4 characters long.').len(4)
@@ -109,8 +109,8 @@ exports.postPassword = function(req, res, next) {
  * @param {string} body.email - New user email (optional).
  * @param {string} body.password - Current password.
  */
-exports.postEmail = function(req, res, next) {
-  console.log('-> postEmail')
+exports.editEmail = function(req, res, next) {
+  console.log('-> accountController.editEmail')
 
   req.assert('email', 'Invalid email address.').isEmail()
   req.assert('password', 'Password is required.').notEmpty()

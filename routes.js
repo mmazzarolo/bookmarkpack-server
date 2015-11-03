@@ -14,24 +14,24 @@ module.exports = function(app) {
   /**
    * Auth routes.
    */
-  app.post('/auth/login', authController.postLogin)
-  app.post('/auth/signup', authController.postSignup, authController.postVerify)
-  app.post('/auth/reset', authController.postReset)
-  app.post('/auth/reset/:token', authController.postResetConfirm)
-  app.post('/auth/verify/', authController.postVerify)
-  app.post('/auth/verify/:token', authController.postVerifyConfirm)
-  app.post('/auth/facebook', authController.postFacebook)
-  app.post('/auth/google', authController.postGoogle)
-  app.post('/auth/unlink', authMiddleware.isAuthenticated, authController.postUnlink)
+  app.post('/auth/login', authController.login)
+  app.post('/auth/signup', authController.signup, authController.verify)
+  app.post('/auth/reset', authController.reset)
+  app.post('/auth/reset/:token', authController.resetConfirm)
+  app.post('/auth/verify/', authController.verify)
+  app.post('/auth/verify/:token', authController.verifyConfirm)
+  app.post('/auth/facebook', authController.facebook)
+  app.post('/auth/google', authController.google)
+  app.post('/auth/unlink', authMiddleware.isAuthenticated, authController.unlink)
 
   /**
    * Account routes.
    */
   app.get('/account', authMiddleware.isAuthenticated, accountController.getAccount)
-  app.patch('/account', authMiddleware.isAuthenticated, accountController.patchAccount)
+  app.patch('/account', authMiddleware.isAuthenticated, accountController.editAccount)
   app.delete('/account', authMiddleware.isAuthenticated, accountController.deleteAccount)
-  app.post('/account/password', authMiddleware.isAuthenticated, accountController.postPassword)
-  app.post('/account/email', authMiddleware.isAuthenticated, accountController.postEmail)
+  app.post('/account/password', authMiddleware.isAuthenticated, accountController.editPassword)
+  app.post('/account/email', authMiddleware.isAuthenticated, accountController.editEmail)
 
   /**
    * User routes.
@@ -52,28 +52,27 @@ module.exports = function(app) {
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
     formatMiddleware.formatBookmarks,
-    bookmarkController.postMyBookmarks)
+    bookmarkController.addBookmarks)
 
-  app.patch('/user/bookmarks',
+  app.put('/user/bookmarks',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
     formatMiddleware.formatBookmarks,
-    bookmarkController.patchMyBookmark)
+    bookmarkController.editBookmarks)
 
   app.delete('/user/bookmarks',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
     formatMiddleware.formatBookmarks,
-    bookmarkController.deleteMyBookmarks)
+    bookmarkController.deleteBookmarks)
 
   app.post('/user/bookmarks/import',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
-    bookmarkController.postImport)
+    bookmarkController.import)
 
   app.post('/user/bookmarks/github',
     authMiddleware.isAuthenticated,
     authMiddleware.getAuthenticatedUser,
-    bookmarkController.postGithub)
-  // app.get('/users/:username/bookmarks/:bookmark', bookmarkController.getBookmark);
+    bookmarkController.github)
  }

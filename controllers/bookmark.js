@@ -35,8 +35,8 @@ var Bookmark = require('../models/Bookmark')
  * @param {bookmark}/{[bookmark]} body - A single bookmark or an array of bookmarks.
  * @param {bookmark}/{[bookmark]} - The single updated bookmark or the array of updated bookmarks.
  */
- exports.postMyBookmarks = function(req, res, next) {
-  console.log('-> postBookmarks')
+ exports.addBookmarks = function(req, res, next) {
+  console.log('-> bookmarkController.addBookmarks')
 
   var extractTitle = (_.indexOf(req.query.extract, 'title') != -1)
   var extractFavicon = (_.indexOf(req.query.extract, 'favicon') != -1)
@@ -117,8 +117,8 @@ function addBookmarksErrors(bookmark, index) {
  *                                     Every submitted bookmark must have an _id.
  * @return {bookmark} - The updated bookmark.
  */
- exports.patchMyBookmark = function(req, res, next) {
-  console.log('-> patchBookmark')
+ exports.editBookmarks = function(req, res, next) {
+  console.log('-> bookmarkController.editBookmarks')
 
   var extractTitle = (_.indexOf(req.query.extract, 'title') != -1)
   var extractFavicon = (_.indexOf(req.query.extract, 'favicon') != -1)
@@ -209,8 +209,8 @@ function editBookmarksErrors(bookmark, index) {
  *
  * @param {bookmark/[bookmarks]} body - The id or an array of id of the bookmarks to delete.
  */
- exports.deleteMyBookmarks = function(req, res, next) {
-  console.log('-> deleteBookmark')
+ exports.deleteBookmarks = function(req, res, next) {
+  console.log('-> bookmarkController.deleteBookmarks')
 
   var validationErrors = []
 
@@ -260,8 +260,8 @@ function deleteBookmarksErrors(bookmark, index) {
  *
  * @param {file} - Bookmarks exported in HTML format.
  */
- exports.postImport = function(req, res, next) {
-  console.log('-> postImport')
+ exports.import = function(req, res, next) {
+  console.log('-> bookmarkController.import')
 
   var html = ''
   var bookmarks = []
@@ -328,8 +328,8 @@ function deleteBookmarksErrors(bookmark, index) {
  *
  * @param {string} body.username - The GitHub username of the owner of the starred repositories to import.
  */
- exports.postGithub = function(req, res, next) {
-  console.log('-> postGithub')
+ exports.github = function(req, res, next) {
+  console.log('-> bookmarkController.github')
 
   var re = new RegExp('^[A-Z0-9_]*$', 'i')
   if (typeof(req.body.username) != 'string' || !re.test(req.body.username))

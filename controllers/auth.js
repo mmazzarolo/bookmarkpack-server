@@ -36,8 +36,8 @@ function createJWT(user) {
  * @param {string} body.password - User's password.
  * @return {token} - JWT token.
  */
-exports.postLogin = function(req, res, next) {
-  console.log('-> postLogin')
+exports.login = function(req, res, next) {
+  console.log('-> authController.login')
   console.log('req.body.email: ' + req.body.email)
   console.log('req.body.password: ' + req.body.password)
 
@@ -66,8 +66,8 @@ exports.postLogin = function(req, res, next) {
  * @param {string} body.username - User's username (optional).
  * @return {token} - JWT token.
  */
-exports.postSignup = function(req, res, next) {
-  console.log('-> postSignup')
+exports.signup = function(req, res, next) {
+  console.log('-> authController.signup')
 
   req.assert('email', 'Invalid email address.').isEmail()
   req.assert('password', 'Password must be at least 4 characters long.').len(4)
@@ -102,8 +102,8 @@ exports.postSignup = function(req, res, next) {
  * @param {string} body.redirectUri - The redirect URL of the caller.
  * @return {token} - JWT token.
  */
-exports.postGoogle = function(req, res, next) {
-  console.log('-> postGoogle')
+exports.google = function(req, res, next) {
+  console.log('-> authController.google')
 
   var accessTokenUrl = 'https://accounts.google.com/o/oauth2/token'
   var peopleApiUrl = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
@@ -183,8 +183,8 @@ exports.postGoogle = function(req, res, next) {
  * @param {string} body.redirectUri - The redirect URL of the caller.
  * @return {token} - JWT token.
  */
-exports.postFacebook = function(req, res, next) {
-  console.log('-> postFacebook')
+exports.facebook = function(req, res, next) {
+  console.log('-> authController.facebook')
 
   var accessTokenUrl = 'https://graph.facebook.com/v2.3/oauth/access_token'
   var graphApiUrl = 'https://graph.facebook.com/v2.3/me' + '?fields=email,name,id'
@@ -262,8 +262,8 @@ exports.postFacebook = function(req, res, next) {
  *
  * @param {string} body.email - User's email.
  */
-exports.postReset = function(req, res, next) {
-  console.log('-> postReset')
+exports.reset = function(req, res, next) {
+  console.log('-> authController.reset')
 
   req.assert('email', 'Email address is required.').notEmpty()
   req.assert('email', 'Invalid email address.').isEmail()
@@ -313,8 +313,8 @@ exports.postReset = function(req, res, next) {
  *
  * @param {string} body.password - User's new password.
  */
-exports.postResetConfirm = function(req, res, next) {
-  console.log('-> postResetConfirm')
+exports.resetConfirm = function(req, res, next) {
+  console.log('-> authController.resetConfirm')
 
   req.assert('password', 'Password is required.').notEmpty()
   req.assert('password', 'Password must be at least 4 characters long.').len(4)
@@ -359,8 +359,8 @@ exports.postResetConfirm = function(req, res, next) {
  *
  * @param {string} body.email - User's email.
  */
-exports.postVerify = function(req, res, next) {
-  console.log('-> postVerify')
+exports.verify = function(req, res, next) {
+  console.log('-> authController.verify')
 
   req.assert('email', 'Email address is required.').notEmpty()
   req.assert('email', 'Invalid email address.').isEmail()
@@ -408,8 +408,8 @@ exports.postVerify = function(req, res, next) {
  *
  * Process the verification request.
  */
-exports.postVerifyConfirm = function(req, res, next) {
-  console.log('-> postVerifyConfirm')
+exports.verifyConfirm = function(req, res, next) {
+  console.log('-> authController.verifyConfirm')
 
   User
     .findOne({ verificationToken: req.params.token })
@@ -433,8 +433,8 @@ exports.postVerifyConfirm = function(req, res, next) {
  *
  * @param {string} body.provider - The provider to unlink (can be 'facebook' or 'google').
  */
-exports.postUnlink = function(req, res, next) {
-  console.log('-> postUnlink')
+exports.unlink = function(req, res, next) {
+  console.log('-> authController.unlink')
 
   var provider = req.body.provider
   var providers = ['facebook', 'google']
