@@ -44,7 +44,7 @@ exports.login = function(req, res, next) {
   req.assert('email', 'Email is required.').notEmpty()
   req.assert('password', 'Password is required.').notEmpty()
   var errors = req.validationErrors()
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors })
 
   User.findOne({ email: req.body.email }, '+password', function(err, user) {
     if (err) return next(err)
@@ -74,7 +74,7 @@ exports.signup = function(req, res, next) {
   req.assert('username', 'Reserved username.').optional().notReserved()
   req.assert('username', 'Only letters and number allowed for username.').optional().isClean()
   var errors = req.validationErrors()
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors })
 
   User.findOne({ email: req.body.email }, function(err, existingUser) {
     if (err) return next(err)
@@ -268,7 +268,7 @@ exports.reset = function(req, res, next) {
   req.assert('email', 'Email address is required.').notEmpty()
   req.assert('email', 'Invalid email address.').isEmail()
   var errors = req.validationErrors()
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors })
 
   async.waterfall([
     // Create a crypted token
@@ -319,7 +319,7 @@ exports.resetConfirm = function(req, res, next) {
   req.assert('password', 'Password is required.').notEmpty()
   req.assert('password', 'Password must be at least 4 characters long.').len(4)
   var errors = req.validationErrors()
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors })
 
   async.waterfall([
     // Search the token user
@@ -365,7 +365,7 @@ exports.verify = function(req, res, next) {
   req.assert('email', 'Email address is required.').notEmpty()
   req.assert('email', 'Invalid email address.').isEmail()
   var errors = req.validationErrors()
-  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors }).end()
+  if (errors) return res.status(422).send({ message: 'Validation error.', errors: errors })
 
   async.waterfall([
     // Create a crypted token

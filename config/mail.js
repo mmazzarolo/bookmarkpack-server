@@ -1,3 +1,5 @@
+'use strict'
+
 exports.resetMail = function(email, token) {
   return {
     to: email,

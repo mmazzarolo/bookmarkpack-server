@@ -1,3 +1,5 @@
+'use strict'
+
 var _ = require('lodash')
 var bodyParser = require('body-parser')
 var compress = require('compression')
@@ -90,7 +92,7 @@ function mongoValidationHandler(err, req, res, next) {
       var item = {}
       item.param = err.errors[field].path
       item.value = err.errors[field].value
-      for (i = 0; i < err.errors[field].message.length; i++) {
+      for (var i = 0; i < err.errors[field].message.length; i++) {
         item.message = err.errors[field].message[i]
         errors.push(item)
       }

@@ -3,8 +3,8 @@
 var _ = require('lodash')
 var async = require('async')
 var Busboy = require('busboy')
-var request = require('request')
 var cheerio = require('cheerio')
+var request = require('request')
 var validator = require('validator')
 
 var User = require('../models/User')
@@ -23,7 +23,7 @@ var Bookmark = require('../models/Bookmark')
   User.findById(req.me, '+bookmarks', function(err, user) {
     if (err) return next(err)
     if (!user) return res.status(404).send({ message: 'Unknown user.' })
-    res.status(200).send(user.bookmarks).end()
+    res.status(200).send(user.bookmarks)
   })
 }
 
@@ -65,7 +65,6 @@ var Bookmark = require('../models/Bookmark')
 
     }, function(err) {
       if (err) return next(err)
-      console.log(validationErrors)
       if (validationErrors.length > 0)
         return res.status(422).send({ message: 'Validation error.', errors: validationErrors })
       user.save(function(err) {
@@ -156,7 +155,6 @@ function addBookmarksErrors(bookmark, index) {
 
     }, function(err) {
       if (err) return next(err)
-        console.log(validationErrors)
       if (validationErrors.length > 0)
         return res.status(422).send({ message: 'Validation error.', errors: validationErrors })
       user.save(function(err) {
@@ -336,7 +334,7 @@ function deleteBookmarksErrors(bookmark, index) {
 
   var re = new RegExp('^[A-Z0-9_]*$', 'i')
   if (typeof(req.body.username) != 'string' || !re.test(req.body.username))
-    return res.status(400).send({ message: 'Invalid username' }).end()
+    return res.status(400).send({ message: 'Invalid username' })
 
   var newBody = []
   var githubUrl = 'https://api.github.com/users/' + req.body.username + '/starred'
@@ -355,14 +353,13 @@ function deleteBookmarksErrors(bookmark, index) {
       }
       request(options, function (err, response, body) {
         if (response.statusCode != 200) {
-          return res.status(404).send({ message: 'User not found' }).end()
+          return res.status(404).send({ message: 'User not found' })
         }
         done(err, favicon, JSON.parse(body))
       })
     },
     // Prepare the bookmarks array
     function(favicon, repos, done) {
-      var bookmarks = []
       async.each(repos, function(repo, complete) {
         var url = repo.html_url
         var name = repo.name

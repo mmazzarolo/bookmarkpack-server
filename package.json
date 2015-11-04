@@ -6,7 +6,7 @@
     "url": "https://github.com/mmazzarolo/bookmarkpack-server.git"
   },
   "scripts": {
-    "start": "node app.js",
+    "start": "node server.js",
     "test": "mocha"
   },
   "dependencies": {
@@ -16,7 +16,6 @@
     "busboy": "^0.2.11",
     "cheerio": "^0.19.0",
     "compress": "^0.99.0",
-    "compression": "^1.6.0",
     "cors": "^2.7.1",
     "crypto": "0.0.3",
     "express": "^4.13.3",
@@ -35,7 +34,6 @@
     "request": "^2.64.0",
     "sendgrid": "^1.9.2",
     "string": "^3.3.1",
-    "uglify-js": "^2.4.24",
     "validator": "^4.2.1",
     "validator-js": "^0.2.1"
   },

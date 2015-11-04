@@ -6,7 +6,7 @@ var jsonValidator = require('is-my-json-valid')
  * Format input bookmark in an array of bookmarks and checks their JSON validity.
  */
  exports.formatBookmarks = function(req, res, next) {
-  console.log('-> formatBookmarks')
+  console.log('-> formatMiddleware.formatBookmarks')
 
   if (req.body.constructor === Array) {
     req.isReqArray = true
