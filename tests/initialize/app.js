@@ -2,7 +2,7 @@ var request = require('supertest')
 var chai = require('chai')
 var should = chai.should()
 
-var app = require('../../app.js')
+var app = require('../../server.js')
 var User = require('../../models/User')
 
 var alpha = {
@@ -15,19 +15,14 @@ var token
 var bookmarks = [
   { url: 'https://www.npmjs.com/' },
   { url: 'http://stackoverflow.com/' },
-  { url: 'http://boards.4chan.org/g/catalog' },
   { url: 'http://www.ebay.it/' },
   { url: 'http://www.amazon.it/' },
   { url: 'https://www.reddit.com/' },
-  { url: 'https://www.facebook.com/' },
-  // { url: 'https://www.youtube.com/' },
-  // { url: 'https://play.google.com' },
-  // { url: 'https://drive.google.com' },
-  // { url: 'https://www.dropbox.com' },
-  // { url: 'https://www.google.it' },
-  // { url: 'https://github.com/' },
-  // { url: 'http://git-scm.com/' },
-  { url: 'https://www.linkedin.com/' }
+  { url: 'https://www.youtube.com/' },
+  { url: 'https://www.dropbox.com' },
+  { url: 'https://www.google.it' },
+  { url: 'https://github.com/' },
+  { url: 'http://git-scm.com/' },
 ]
 
 

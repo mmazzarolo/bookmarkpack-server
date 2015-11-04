@@ -4,17 +4,6 @@ var should = chai.should()
 var User = require('../../models/User')
 
 describe('User Model', function() {
-  it('should not create a user with reserved username', function(done) {
-    var user = new User({
-      username: 'test',
-      email: 'test@gmail.com',
-      password: 'test'
-    })
-    user.save(function(err) {
-      if (err) err.name.should.equal('ValidationError')
-      done()
-    })
-  })
 
   it('should create a new user', function(done) {
     var user = new User({

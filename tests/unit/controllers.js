@@ -2,7 +2,7 @@ var request = require('supertest')
 var chai = require('chai')
 var should = chai.should()
 
-var app = require('../../app.js')
+var app = require('../../server.js')
 var User = require('../../models/User')
 
 var user1 = {
@@ -148,18 +148,18 @@ describe('POST /user/bookmarks', function() {
 /**
  * Get user.
  */
-describe('GET /user', function() {
+describe('GET /user/bookmarks', function() {
   it('should return 200', function(done) {
     request(app)
-      .get('/user')
+      .get('/user/bookmarks')
       .set('Authorization', 'Bearer ' + token)
       .expect(200)
       .end(function(err, res) {
         if (err) done(err)
-        res.body.bookmarks[0].should.have.property('url')
-        res.body.bookmarks[0].should.not.have.property('name')
-        res.body.bookmarks[0].should.not.have.property('favicon')
-        bookmarkId = res.body.bookmarks[0]._id
+        res.body[0].should.have.property('url')
+        res.body[0].should.not.have.property('name')
+        res.body[0].should.not.have.property('favicon')
+        bookmarkId = res.body[0].id
         done()
       })
   })
@@ -168,12 +168,12 @@ describe('GET /user', function() {
 /**
  * Patch the bookmark.
  */
-describe('PATCH /user/bookmarks?extract[]=favicon', function() {
+describe('PUT /user/bookmarks?extract[]=favicon', function() {
   it('should return 200', function(done) {
     request(app)
-      .patch('/user/bookmarks?extract[]=favicon')
+      .put('/user/bookmarks?extract[]=favicon')
       .set('Authorization', 'Bearer ' + token)
-      .send({ _id: bookmarkId, name: 'test001Bookmark' })
+      .send({ id: bookmarkId, name: 'test001Bookmark', url: 'http://stackoverflow.com/' })
       .expect(200, done)
   })
 })
@@ -181,16 +181,16 @@ describe('PATCH /user/bookmarks?extract[]=favicon', function() {
 /**
  * Get user and check updated bookmark.
  */
-describe('GET /user', function() {
+describe('GET /user/bookarks', function() {
   it('should return 200', function(done) {
     request(app)
-      .get('/user')
+      .get('/user/bookmarks')
       .set('Authorization', 'Bearer ' + token)
       .expect(200)
       .end(function(err, res) {
         if (err) done(err)
-        res.body.bookmarks[0].name.should.equal('test001Bookmark')
-        res.body.bookmarks[0].should.have.property('favicon')
+        res.body[0].name.should.equal('test001Bookmark')
+        res.body[0].should.have.property('favicon')
         done()
       })
   })
@@ -204,7 +204,7 @@ describe('DELETE /user/bookmarks', function() {
     request(app)
       .delete('/user/bookmarks')
       .set('Authorization', 'Bearer ' + token)
-      .send({ _id: bookmarkId })
+      .send({ id: bookmarkId })
       .expect(200, done)
   })
 })

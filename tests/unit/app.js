@@ -2,7 +2,7 @@ var request = require('supertest')
 var chai = require('chai')
 var should = chai.should()
 
-var app = require('../../app.js')
+var app = require('../../server.js')
 var User = require('../../models/User')
 
 var user1 = {
