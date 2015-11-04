@@ -315,6 +315,7 @@ function deleteBookmarksErrors(bookmark, index) {
   })
   busboy.on('finish', function() {
     console.log('Done parsing form!')
+    req.isReqArray = true
     req.body = newBody
     next()
   })
@@ -376,6 +377,7 @@ function deleteBookmarksErrors(bookmark, index) {
     }
   ], function(err, results) {
     if (err) return next(err)
+    req.isReqArray = true
     req.body = newBody
     next()
   })
