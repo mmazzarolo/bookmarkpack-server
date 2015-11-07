@@ -14,15 +14,15 @@ Features:
 Routes:
 
 **POST /auth/login:** User login.   
-* *@param {string} body.email - User's email.*  
-* *@param {string} body.password - User's password.*  
-* *@return {token} - JWT token.*  
+*@param {string} body.email - User's email.*  
+*@param {string} body.password - User's password.*  
+*@return {token} - JWT token.*  
 
 **POST /auth/signup:** User local signup.  
-* *@param {string} body.email - User's email.*  
-* *@param {string} body.password - User's password.*  
-* *@param {string} body.username - User's username (optional).*  
-* *@return {token} - JWT token.*  
+*@param {string} body.email - User's email.*  
+*@param {string} body.password - User's password.*  
+*@param {string} body.username - User's username (optional).*  
+*@return {token} - JWT token.*  
 
 **POST /auth/reset:** Create a random token, then the send user an email with a reset link.  
 * *@param {string} body.email - User's email.*  
