@@ -76,7 +76,7 @@ A NodeJS/Express/Mongoose REST server for saving bookmarks that can also be used
 *@param {string} body.oldPassword - Current password.*  
 *@param {string} body.newPassword - New password.*  
  
-**POST /account/email:** Change user password.
+**POST /account/email:** Change user password.  
 *@param {string} body.email - New user email (optional).*  
 *@param {string} body.password - Current password.*  
  
