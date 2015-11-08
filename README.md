@@ -11,6 +11,10 @@ A NodeJS/Express/Mongoose REST server for saving bookmarks that can also be used
 - Import bookmarks from Chrome/Firefox
 - Import bookmarks from GitHub
 
+### Clients:
+[Angular](https://github.com/mmazzarolo/bookmarkpack-client-angular)  
+[Chrome extension](https://github.com/mmazzarolo/bookmarkpack-client-chrome)
+
 ### Bookmark model:
 ```
 {
