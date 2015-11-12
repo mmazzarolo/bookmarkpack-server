@@ -32,7 +32,7 @@ mongoose.connection.on('error', function() {
  */
 app.set('port', process.env.PORT || 3000)
 app.use(compress())
-app.use(cors())
+app.use(cors({credentials: true}))
 app.options('*', cors())
 app.use(logger('dev'))
 app.use(bodyParser.json())
