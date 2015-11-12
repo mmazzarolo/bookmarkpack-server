@@ -2,15 +2,15 @@
 
 module.exports = {
 
-  db: process.env.MONGODB || process.env.MONGOLAB_URI || 'mongodb://localhost:27017/test',
+  db: process.env.MONGODB,
 
-  sendgridApiKey: process.env.SENDGRID_PASSWORD || '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',
+  sendgridApiKey: process.env.SENDGRID_PASSWORD,
 
-  tokenSecret: process.env.TOKEN_SECRET || 'JWT Token Secret',
+  tokenSecret: process.env.TOKEN_SECRET,
 
-  sessionSecret: process.env.SESSION_SECRET || 'Your Session Secret goes here',
+  sessionSecret: process.env.SESSION_SECRET,
 
-  facebookSecret: process.env.FACEBOOK_SECRET || 'bf008664896bd3d91b67011c5a70c7f2',
+  facebookSecret: process.env.FACEBOOK_SECRET,
 
-  googleSecret: process.env.GOOGLE_SECRET || 'd6F8ku7Z9v2rBvWW5iCd0H7N'
+  googleSecret: process.env.GOOGLE_SECRET
 }
