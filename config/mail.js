@@ -3,7 +3,7 @@
 exports.resetMail = function(email, token) {
   return {
     to: email,
-    from: 'https://bookmarkpack.herokuapp.com',
+    from: 'bookmarkpack.herokuapp.com',
     subject: 'Reset your password on BookmarkPack',
     text:
       'You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n' +
@@ -16,7 +16,7 @@ exports.resetMail = function(email, token) {
 exports.resetConfirmMail = function(email) {
   return {
     to: email,
-    from: 'https://bookmarkpack.herokuapp.com',
+    from: 'bookmarkpack.herokuapp.com',
     subject: 'Your BookmarkPack password has been changed',
     text:
       'Hello,\n\n' +
@@ -27,7 +27,7 @@ exports.resetConfirmMail = function(email) {
 exports.verifyMail = function(email, token) {
   return {
     to: email,
-    from: 'https://bookmarkpack.herokuapp.com',
+    from: 'bookmarkpack.herokuapp.com',
     subject: 'Verify your account',
     text:
       'You are receiving this email because you (or someone else) have registered a new account on BookmarkPack.\n\n' +
